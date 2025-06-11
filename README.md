@@ -48,8 +48,8 @@ This repository contains the implementation of a custom data link layer protocol
 |---------------|----------------------------------|
 | Physical      | LimeSDR RF front-end             |
 | Data Link     | GNU Radio custom framing         |
-| Network       | Python `Receiver` class and      |
-|               |       'Tranceiver class'         |
+| Network       | Python `Receiver` class          |
+| Network       | Python 'Tranceiver' class        |
 | Transport     | Host-side logic in `main.py`     |
 
 ---
