@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environment
+venv/
+
+# GNU Radio Companion
+*.bak
+*.grc~*
+
+# Editor and OS junk
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test outputs or temporary files
+test/*.out
+test/*.tmp
