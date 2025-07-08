@@ -63,6 +63,18 @@ blocks:
     coordinate: [736, 20.0]
     rotation: 0
     state: enabled
+- name: frequency
+  id: variable
+  parameters:
+    comment: ''
+    value: '1000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [336, 12.0]
+    rotation: 0
+    state: enabled
 - name: samp_rate
   id: variable
   parameters:
@@ -95,7 +107,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [368, 408.0]
+    coordinate: [56, 232.0]
     rotation: 0
     state: enabled
 - name: blocks_throttle_0
@@ -114,7 +126,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [648, 448.0]
+    coordinate: [360, 276.0]
     rotation: 0
     state: enabled
 - name: qtgui_freq_sink_x_0
@@ -195,7 +207,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [872, 432.0]
+    coordinate: [584, 260.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0
@@ -292,7 +304,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [872, 584.0]
+    coordinate: [584, 420.0]
     rotation: 0
     state: enabled
 
