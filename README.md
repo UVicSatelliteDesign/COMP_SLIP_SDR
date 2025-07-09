@@ -34,8 +34,8 @@ This repository contains the implementation of a custom data link layer protocol
 
 ## Communication Reliability Features
 
-- **ARQ:** Automatic Repeat Request
-  - ACK/NACK handling
+- **ARQ:** Automatic Repeat Request  
+  - ACK/NACK handling  
   - Lost-state ping recovery
 - **CRC:** 16-bit checksum
 - **CSMA/CA:** Channel sensing with random backoff
@@ -49,9 +49,26 @@ This repository contains the implementation of a custom data link layer protocol
 | Physical      | LimeSDR RF front-end             |
 | Data Link     | GNU Radio custom framing         |
 | Network       | Python `Receiver` class          |
-| Network       | Python 'Tranceiver' class        |
+| Network       | Python 'Transceiver' class       |
 | Transport     | Host-side logic in `main.py`     |
 
 ---
 
+### 📡 Frame Synchronization & Decoding Flow (GNU Radio)
 
+```text
+[Input Source]
+     ↓
+[Unpack K Bits]
+     ↓
+[Correlate Access Code - Tag Stream]   ← detects sync
+     ↓
+[Pack K Bits]
+     ↓
+[Tagged Stream Align]                  ← aligns stream
+     ↓
+[Fixed Length Tagger]                  ← reads length byte
+     ↓
+[Tagged Stream to PDU]                 ← converts to packets
+     ↓
+[Message Debug / Python CRC Checker]   ← final output
