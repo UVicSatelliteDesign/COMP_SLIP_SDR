@@ -60,19 +60,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 20.0]
-    rotation: 0
-    state: enabled
-- name: frequency
-  id: variable
-  parameters:
-    comment: ''
-    value: '1000'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [336, 12.0]
+    coordinate: [312, 12.0]
     rotation: 0
     state: enabled
 - name: samp_rate
@@ -87,36 +75,33 @@ blocks:
     coordinate: [200, 12]
     rotation: 0
     state: enabled
-- name: analog_sig_source_x_0
-  id: analog_sig_source_x
+- name: blocks_tagged_stream_align_0
+  id: blocks_tagged_stream_align
   parameters:
     affinity: ''
     alias: ''
-    amp: '1'
     comment: ''
-    freq: frequency
+    lengthtagname: packet_len
     maxoutbuf: '0'
     minoutbuf: '0'
-    offset: '0'
-    phase: '0'
-    samp_rate: samp_rate
-    showports: 'False'
     type: complex
-    waveform: analog.GR_COS_WAVE
+    vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [56, 232.0]
-    rotation: 0
+    coordinate: [672, 492.0]
+    rotation: 180
     state: enabled
-- name: blocks_throttle_0
-  id: blocks_throttle
+- name: blocks_throttle2_0
+  id: blocks_throttle2
   parameters:
     affinity: ''
     alias: ''
     comment: ''
     ignoretag: 'True'
+    limit: auto
+    maximum: '0.1'
     maxoutbuf: '0'
     minoutbuf: '0'
     samples_per_second: samp_rate
@@ -126,7 +111,46 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [360, 276.0]
+    coordinate: [360, 340.0]
+    rotation: 0
+    state: enabled
+- name: digital_correlate_access_code_xx_ts_0
+  id: digital_correlate_access_code_xx_ts
+  parameters:
+    access_code: '101010'
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tagname: ''
+    threshold: ''
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [600, 332.0]
+    rotation: 0
+    state: enabled
+- name: network_socket_pdu_0
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    host: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mtu: '10000'
+    port: '52001'
+    tcp_no_delay: 'False'
+    type: TCP_SERVER
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [192, 656.0]
     rotation: 0
     state: enabled
 - name: qtgui_freq_sink_x_0
@@ -207,7 +231,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 260.0]
+    coordinate: [656, -4.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0
@@ -304,14 +328,83 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 420.0]
+    coordinate: [656, 156.0]
+    rotation: 0
+    state: enabled
+- name: satellites_crc_check_0
+  id: satellites_crc_check
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    discard_crc: 'False'
+    final_xor: '0xFFFFFFFF'
+    initial_value: '0xFFFFFFFF'
+    input_reflected: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_bits: '32'
+    poly: '0x4C11DB7'
+    result_reflected: 'True'
+    skip_header_bytes: '0'
+    swap_endianness: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [112, 516.0]
+    rotation: 180
+    state: enabled
+- name: satellites_fixedlen_to_pdu_0
+  id: satellites_fixedlen_to_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    pack: 'False'
+    packet_len: ''
+    syncword_tag: syncword
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [392, 508.0]
+    rotation: 180
+    state: enabled
+- name: soapy_limesdr_source_0
+  id: soapy_limesdr_source
+  parameters:
+    affinity: ''
+    alias: ''
+    bandwidth: '0.0'
+    center_freq: freq
+    comment: ''
+    dev_args: ''
+    freq_correction: '0'
+    gain: '20.0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    type: fc32
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [88, 340.0]
     rotation: 0
     state: enabled
 
 connections:
-- [analog_sig_source_x_0, '0', blocks_throttle_0, '0']
-- [blocks_throttle_0, '0', qtgui_freq_sink_x_0, '0']
-- [blocks_throttle_0, '0', qtgui_time_sink_x_0, '0']
+- [blocks_tagged_stream_align_0, '0', satellites_fixedlen_to_pdu_0, '0']
+- [blocks_throttle2_0, '0', digital_correlate_access_code_xx_ts_0, '0']
+- [digital_correlate_access_code_xx_ts_0, '0', blocks_tagged_stream_align_0, '0']
+- [satellites_crc_check_0, fail, network_socket_pdu_0, pdus]
+- [satellites_crc_check_0, ok, network_socket_pdu_0, pdus]
+- [satellites_fixedlen_to_pdu_0, pdus, satellites_crc_check_0, in]
+- [soapy_limesdr_source_0, '0', blocks_throttle2_0, '0']
 
 metadata:
   file_format: 1
