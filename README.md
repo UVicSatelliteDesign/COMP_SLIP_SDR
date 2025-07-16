@@ -100,7 +100,7 @@ This test framework simulates full end-to-end message flow using GNU Radio and P
      python scripts/parse_output.py
      ```
 
-### Example Workflow
+### Example Testing Workflow
 
 ```bash
 # Step 1 - From GNU Radio Companion, run testing_connection.grc
