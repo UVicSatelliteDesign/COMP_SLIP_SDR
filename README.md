@@ -38,8 +38,6 @@ This repository contains the implementation of a custom data link layer protocol
   - ACK/NACK handling
   - Lost-state ping recovery
 - **CRC:** 16-bit checksum
-- **CSMA/CA:** Channel sensing with random backoff
-
 ---
 
 ### OSI Layer Mapping
