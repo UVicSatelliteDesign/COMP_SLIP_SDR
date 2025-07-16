@@ -33,6 +33,42 @@ options:
     state: enabled
 
 blocks:
+- name: Bandwith
+  id: variable
+  parameters:
+    comment: ''
+    value: '1.2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [408, 180.0]
+    rotation: 0
+    state: enabled
+- name: RF_gain
+  id: variable
+  parameters:
+    comment: ''
+    value: '20'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [560, 100.0]
+    rotation: 0
+    state: enabled
+- name: center_freq
+  id: variable
+  parameters:
+    comment: ''
+    value: 915e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [408, 92.0]
+    rotation: 0
+    state: enabled
 - name: crc_poly
   id: variable
   parameters:
@@ -42,7 +78,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [688, 12.0]
+    coordinate: [1528, 100.0]
+    rotation: 0
+    state: enabled
+- name: f_dev
+  id: variable
+  parameters:
+    comment: ''
+    value: 50e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [560, 12.0]
     rotation: 0
     state: enabled
 - name: frame_len
@@ -54,7 +102,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [688, 188.0]
+    coordinate: [1096, 196.0]
+    rotation: 0
+    state: enabled
+- name: freq_correction
+  id: variable
+  parameters:
+    comment: ''
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [552, 188.0]
     rotation: 0
     state: enabled
 - name: frequency
@@ -96,7 +156,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 100.0]
+    coordinate: [1248, 108.0]
     rotation: 0
     state: enabled
 - name: host_ip_0
@@ -108,7 +168,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 188.0]
+    coordinate: [1488, 196.0]
     rotation: 0
     state: enabled
 - name: mod_dev
@@ -120,7 +180,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [800, 12.0]
+    coordinate: [1208, 20.0]
     rotation: 0
     state: enabled
 - name: payload_len
@@ -132,7 +192,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [688, 92.0]
+    coordinate: [1096, 100.0]
     rotation: 0
     state: enabled
 - name: preamble
@@ -144,7 +204,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [808, 188.0]
+    coordinate: [1216, 196.0]
     rotation: 0
     state: enabled
 - name: preamble_byte
@@ -156,31 +216,31 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [560, 188.0]
-    rotation: 0
-    state: enabled
-- name: rx_gain
-  id: variable
-  parameters:
-    comment: ''
-    value: '30'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [560, 12.0]
+    coordinate: [1344, 196.0]
     rotation: 0
     state: enabled
 - name: samp_rate
   id: variable
   parameters:
     comment: ''
-    value: '32000'
+    value: '4.8'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [416, 4.0]
+    rotation: 0
+    state: enabled
+- name: sensitivity
+  id: variable
+  parameters:
+    comment: ''
+    value: "\t2*3.141592653589793*f_dev/samp_rate"
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [664, 12.0]
     rotation: 0
     state: enabled
 - name: sync_word
@@ -192,7 +252,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [920, 12.0]
+    coordinate: [1328, 20.0]
     rotation: 0
     state: enabled
 - name: sync_word_0
@@ -204,7 +264,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [560, 92.0]
+    coordinate: [1456, 12.0]
     rotation: 0
     state: enabled
 - name: tcp_port
@@ -216,7 +276,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 92.0]
+    coordinate: [1392, 108.0]
     rotation: 0
     state: enabled
 - name: Output
@@ -316,8 +376,8 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    length: '32'
-    long_form: 'True'
+    length: '1024 '
+    long_form: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
     type: cc
@@ -360,8 +420,8 @@ blocks:
     minoutbuf: '0'
     mu: '0.5'
     omega_relative_limit: '0.005'
-    samples_per_symbol: '2'
-    sensitivity: '1.0'
+    samples_per_symbol: '4'
+    sensitivity: sensitivity
     verbose: 'False'
   states:
     bus_sink: false
@@ -475,12 +535,12 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    bandwidth: '0.0'
-    center_freq: freq
+    bandwidth: Bandwith
+    center_freq: center_freq
     comment: ''
-    dev_args: ''
+    dev_args: driver=lime
     freq_correction: '0'
-    gain: '20.0'
+    gain: RF_gain
     maxoutbuf: '0'
     minoutbuf: '0'
     samp_rate: samp_rate
@@ -489,7 +549,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 508.0]
+    coordinate: [176, 500.0]
     rotation: 0
     state: enabled
 
