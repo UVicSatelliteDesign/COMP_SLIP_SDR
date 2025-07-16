@@ -27,7 +27,7 @@ import threading
 
 
 
-class tx_flowgraph(gr.top_block, Qt.QWidget):
+class rx_flowgraph(gr.top_block, Qt.QWidget):
 
     def __init__(self):
         gr.top_block.__init__(self, "Not titled yet", catch_exceptions=True)
@@ -50,7 +50,7 @@ class tx_flowgraph(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "tx_flowgraph")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "rx_flowgraph")
 
         try:
             geometry = self.settings.value("geometry")
@@ -192,7 +192,7 @@ class tx_flowgraph(gr.top_block, Qt.QWidget):
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "tx_flowgraph")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "rx_flowgraph")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -220,7 +220,7 @@ class tx_flowgraph(gr.top_block, Qt.QWidget):
 
 
 
-def main(top_block_cls=tx_flowgraph, options=None):
+def main(top_block_cls=rx_flowgraph, options=None):
 
     qapp = Qt.QApplication(sys.argv)
 
