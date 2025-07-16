@@ -75,30 +75,51 @@ blocks:
     coordinate: [200, 12]
     rotation: 0
     state: enabled
-- name: analog_sig_source_x_0
-  id: analog_sig_source_x
+- name: network_socket_pdu_0
+  id: network_socket_pdu
   parameters:
     affinity: ''
     alias: ''
-    amp: '1'
     comment: ''
-    freq: '1000'
+    host: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    offset: '0'
-    phase: '0'
-    samp_rate: samp_rate
-    showports: 'False'
-    type: complex
-    waveform: analog.GR_COS_WAVE
+    mtu: '10000'
+    port: '52001'
+    tcp_no_delay: 'False'
+    type: TCP_SERVER
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 256.0]
+    coordinate: [144, 384.0]
     rotation: 0
     state: enabled
-connections: []
+- name: soapy_limesdr_source_0
+  id: soapy_limesdr_source
+  parameters:
+    affinity: ''
+    alias: ''
+    bandwidth: '0.0'
+    center_freq: freq
+    comment: ''
+    dev_args: ''
+    freq_correction: '0'
+    gain: '20.0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    type: fc32
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1264, 404.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [network_socket_pdu_0, pdus, soapy_limesdr_source_0, cmd]
 
 metadata:
   file_format: 1
