@@ -33,6 +33,36 @@ options:
     state: enabled
 
 blocks:
+- name: frequency
+  id: variable_qtgui_chooser
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: ''
+    label0: 'Frequency: 0'
+    label1: 'Frequency: 1000'
+    label2: 'Frequency: -2000'
+    label3: ''
+    label4: ''
+    labels: '[]'
+    num_opts: '3'
+    option0: '0'
+    option1: '1000'
+    option2: '-2000'
+    option3: '3'
+    option4: '4'
+    options: '[0, 1, 2]'
+    orient: Qt.QVBoxLayout
+    type: int
+    value: '0'
+    widget: combo_box
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1080, 200.0]
+    rotation: 0
+    state: enabled
 - name: samp_rate
   id: variable
   parameters:
