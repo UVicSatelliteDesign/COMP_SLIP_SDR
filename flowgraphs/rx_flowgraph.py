@@ -70,7 +70,7 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         self.threshold = threshold = 450
         self.tcp_port = tcp_port = '52001'
         self.sync_word = sync_word = 1
-        self.samp_rate = samp_rate = 30.72M
+        self.samp_rate = samp_rate = 30.72e6
         self.preamble = preamble = 0b10101010
         self.payload_len = payload_len = 128
         self.host_ip = host_ip = '127.0.0.1'
@@ -79,7 +79,7 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         self.center_freq = center_freq = 915e6
         self.RF_gain = RF_gain = 30
         self.K = K = 8
-        self.Bandwith = Bandwith = 30.72M
+        self.Bandwith = Bandwith = 30.72e6
 
         ##################################################
         # Blocks

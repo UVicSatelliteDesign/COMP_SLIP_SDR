@@ -37,7 +37,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 30.72M
+    value: 30.72e6
   states:
     bus_sink: false
     bus_source: false
@@ -145,7 +145,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 30.72M
+    value: 30.72e6
   states:
     bus_sink: false
     bus_source: false
