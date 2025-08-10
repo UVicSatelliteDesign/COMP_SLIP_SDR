@@ -78,7 +78,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 524.0]
+    coordinate: [832, 212.0]
     rotation: 0
     state: enabled
 - name: crc_poly
@@ -102,7 +102,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2328, 396.0]
+    coordinate: [712, 212.0]
     rotation: 0
     state: enabled
 - name: host_ip
@@ -204,7 +204,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1024, 1004.0]
+    coordinate: [720, 1012.0]
     rotation: 0
     state: enabled
 - name: blocks_message_debug_0
@@ -219,7 +219,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [784, 816.0]
+    coordinate: [480, 824.0]
     rotation: 0
     state: enabled
 - name: blocks_message_debug_0_0
@@ -234,7 +234,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1176, 800.0]
+    coordinate: [872, 808.0]
     rotation: 0
     state: enabled
 - name: blocks_message_strobe_0
@@ -253,7 +253,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [112, 676.0]
+    coordinate: [2096, 92.0]
     rotation: 0
     state: enabled
 - name: blocks_pack_k_bits_bb_0
@@ -269,7 +269,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1784, 540.0]
+    coordinate: [1480, 548.0]
     rotation: 0
     state: enabled
 - name: blocks_tagged_stream_align_0
@@ -287,7 +287,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1776, 668.0]
+    coordinate: [1472, 676.0]
     rotation: 180
     state: enabled
 - name: blocks_throttle2_0
@@ -308,7 +308,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 508.0]
+    coordinate: [600, 516.0]
     rotation: 0
     state: enabled
 - name: blocks_unpack_k_bits_bb_0
@@ -324,7 +324,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1136, 524.0]
+    coordinate: [832, 532.0]
     rotation: 0
     state: enabled
 - name: digital_correlate_access_code_xx_ts_0
@@ -343,7 +343,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1432, 516.0]
+    coordinate: [1128, 524.0]
     rotation: 0
     state: enabled
 - name: digital_gfsk_demod_0
@@ -366,7 +366,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 460.0]
+    coordinate: [336, 468.0]
     rotation: 0
     state: enabled
 - name: network_socket_pdu_0
@@ -386,7 +386,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [792, 648.0]
+    coordinate: [488, 656.0]
     rotation: 180
     state: enabled
 - name: network_socket_pdu_0_0
@@ -406,7 +406,29 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 656.0]
+    coordinate: [2408, 72.0]
+    rotation: 0
+    state: enabled
+- name: outputFromTX
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: C:\Users\degan\OneDrive\Documents\Work\Projects\UVSD\Information\raspiENV\scripts\tx_baseband.cfile
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'False'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [88, 656.0]
     rotation: 0
     state: enabled
 - name: pdu_pdu_to_tagged_stream_0
@@ -423,7 +445,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [664, 1020.0]
+    coordinate: [360, 1028.0]
     rotation: 0
     state: enabled
 - name: pdu_tagged_stream_to_pdu_0
@@ -440,7 +462,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1448, 660.0]
+    coordinate: [1144, 668.0]
     rotation: 180
     state: enabled
 - name: satellites_crc_check_0
@@ -464,7 +486,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1144, 644.0]
+    coordinate: [840, 652.0]
     rotation: 180
     state: enabled
 - name: soapy_limesdr_source_0
@@ -486,9 +508,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [232, 500.0]
+    coordinate: [48, 508.0]
     rotation: 0
-    state: enabled
+    state: disabled
 
 connections:
 - [blocks_message_strobe_0, strobe, network_socket_pdu_0_0, pdus]
@@ -500,6 +522,7 @@ connections:
 - [digital_gfsk_demod_0, '0', blocks_throttle2_0, '0']
 - [network_socket_pdu_0, pdus, blocks_message_debug_0, print_pdu]
 - [network_socket_pdu_0, pdus, pdu_pdu_to_tagged_stream_0, pdus]
+- [outputFromTX, '0', digital_gfsk_demod_0, '0']
 - [pdu_pdu_to_tagged_stream_0, '0', Output, '0']
 - [pdu_tagged_stream_to_pdu_0, pdus, satellites_crc_check_0, in]
 - [satellites_crc_check_0, fail, blocks_message_debug_0_0, log]

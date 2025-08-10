@@ -25,7 +25,6 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import gr, pdu
 from gnuradio import network
-from gnuradio import soapy
 import satellites
 import threading
 
@@ -85,19 +84,6 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
 
-        self.soapy_limesdr_source_0 = None
-        dev = 'driver=lime'
-        stream_args = ''
-        tune_args = ['']
-        settings = ['']
-
-        self.soapy_limesdr_source_0 = soapy.source(dev, "fc32", 1, 'driver=lime',
-                                  stream_args, tune_args, settings)
-        self.soapy_limesdr_source_0.set_sample_rate(0, samp_rate)
-        self.soapy_limesdr_source_0.set_bandwidth(0, Bandwith)
-        self.soapy_limesdr_source_0.set_frequency(0, center_freq)
-        self.soapy_limesdr_source_0.set_frequency_correction(0, 0)
-        self.soapy_limesdr_source_0.set_gain(0, min(max(RF_gain, -12.0), 61.0))
         self.satellites_crc_check_0 = satellites.crc_check(16, crc_poly, 0xFFFFFFFF, 0xFFFFFFFF, True, True, False, False, 0)
         self.pdu_tagged_stream_to_pdu_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, 'packet_len')
         self.pdu_pdu_to_tagged_stream_0 = pdu.pdu_to_tagged_stream(gr.types.byte_t, 'packet_len')
@@ -124,6 +110,8 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
         self.Output = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\degan\\OneDrive\\Documents\\Work\\Projects\\UVSD\\Information\\raspiENV\\scripts\\output.txt', False)
         self.Output.set_unbuffered(True)
+        self.OUTPUT_FROM_TX = blocks.file_source(gr.sizeof_gr_complex*1, 'C:\\Users\\degan\\OneDrive\\Documents\\Work\\Projects\\UVSD\\Information\\raspiENV\\scripts\\tx_baseband.cfile', False, 0, 0)
+        self.OUTPUT_FROM_TX.set_begin_tag(pmt.PMT_NIL)
 
 
         ##################################################
@@ -135,6 +123,7 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         self.msg_connect((self.pdu_tagged_stream_to_pdu_0, 'pdus'), (self.satellites_crc_check_0, 'in'))
         self.msg_connect((self.satellites_crc_check_0, 'fail'), (self.blocks_message_debug_0_0, 'log'))
         self.msg_connect((self.satellites_crc_check_0, 'ok'), (self.network_socket_pdu_0, 'pdus'))
+        self.connect((self.OUTPUT_FROM_TX, 0), (self.digital_gfsk_demod_0, 0))
         self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.blocks_tagged_stream_align_0, 0))
         self.connect((self.blocks_tagged_stream_align_0, 0), (self.pdu_tagged_stream_to_pdu_0, 0))
         self.connect((self.blocks_throttle2_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
@@ -142,7 +131,6 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         self.connect((self.digital_correlate_access_code_xx_ts_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
         self.connect((self.digital_gfsk_demod_0, 0), (self.blocks_throttle2_0, 0))
         self.connect((self.pdu_pdu_to_tagged_stream_0, 0), (self.Output, 0))
-        self.connect((self.soapy_limesdr_source_0, 0), (self.digital_gfsk_demod_0, 0))
 
 
     def closeEvent(self, event):
@@ -177,7 +165,6 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.blocks_throttle2_0.set_sample_rate(self.samp_rate)
-        self.soapy_limesdr_source_0.set_sample_rate(0, self.samp_rate)
 
     def get_preamble(self):
         return self.preamble
@@ -214,14 +201,12 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
 
     def set_center_freq(self, center_freq):
         self.center_freq = center_freq
-        self.soapy_limesdr_source_0.set_frequency(0, self.center_freq)
 
     def get_RF_gain(self):
         return self.RF_gain
 
     def set_RF_gain(self, RF_gain):
         self.RF_gain = RF_gain
-        self.soapy_limesdr_source_0.set_gain(0, min(max(self.RF_gain, -12.0), 61.0))
 
     def get_K(self):
         return self.K
@@ -234,7 +219,6 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
 
     def set_Bandwith(self, Bandwith):
         self.Bandwith = Bandwith
-        self.soapy_limesdr_source_0.set_bandwidth(0, self.Bandwith)
 
 
 
