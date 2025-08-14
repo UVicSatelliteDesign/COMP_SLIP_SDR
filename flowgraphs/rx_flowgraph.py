@@ -87,8 +87,9 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         self.satellites_crc_check_0 = satellites.crc_check(16, crc_poly, 0xFFFFFFFF, 0xFFFFFFFF, True, True, False, False, 0)
         self.pdu_tagged_stream_to_pdu_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, 'packet_len')
         self.pdu_pdu_to_tagged_stream_0 = pdu.pdu_to_tagged_stream(gr.types.byte_t, 'packet_len')
-        self.network_socket_pdu_0_0 = network.socket_pdu('TCP_SERVER', host_ip, tcp_port, 10000, False)
-        self.network_socket_pdu_0 = network.socket_pdu('TCP_SERVER', '', '52001', 1500, False)
+        self.outputFromTX = blocks.file_source(gr.sizeof_gr_complex*1, 'C:\\Users\\degan\\OneDrive\\Documents\\Work\\Projects\\UVSD\\Information\\raspiENV\\scripts\\tx_baseband.cfile', False, 0, 0)
+        self.outputFromTX.set_begin_tag(pmt.PMT_NIL)
+        self.network_socket_pdu_0 = network.socket_pdu('TCP_SERVER', host_ip, tcp_port, 1500, False)
         self.digital_gfsk_demod_0 = digital.gfsk_demod(
             samples_per_symbol=4,
             sensitivity=1,
@@ -104,32 +105,27 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_char*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
         self.blocks_tagged_stream_align_0 = blocks.tagged_stream_align(gr.sizeof_char*1, 'packet_len')
         self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(K)
-        self.blocks_message_strobe_0 = blocks.message_strobe(pmt.cons(pmt.make_dict(), pmt.make_u8vector(4, ord('x')))
-        , 1000)
         self.blocks_message_debug_0_0 = blocks.message_debug(True, gr.log_levels.err)
         self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
         self.Output = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\degan\\OneDrive\\Documents\\Work\\Projects\\UVSD\\Information\\raspiENV\\scripts\\output.txt', False)
         self.Output.set_unbuffered(True)
-        self.OUTPUT_FROM_TX = blocks.file_source(gr.sizeof_gr_complex*1, 'C:\\Users\\degan\\OneDrive\\Documents\\Work\\Projects\\UVSD\\Information\\raspiENV\\scripts\\tx_baseband.cfile', False, 0, 0)
-        self.OUTPUT_FROM_TX.set_begin_tag(pmt.PMT_NIL)
 
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.blocks_message_strobe_0, 'strobe'), (self.network_socket_pdu_0_0, 'pdus'))
         self.msg_connect((self.network_socket_pdu_0, 'pdus'), (self.blocks_message_debug_0, 'print_pdu'))
         self.msg_connect((self.network_socket_pdu_0, 'pdus'), (self.pdu_pdu_to_tagged_stream_0, 'pdus'))
         self.msg_connect((self.pdu_tagged_stream_to_pdu_0, 'pdus'), (self.satellites_crc_check_0, 'in'))
         self.msg_connect((self.satellites_crc_check_0, 'fail'), (self.blocks_message_debug_0_0, 'log'))
         self.msg_connect((self.satellites_crc_check_0, 'ok'), (self.network_socket_pdu_0, 'pdus'))
-        self.connect((self.OUTPUT_FROM_TX, 0), (self.digital_gfsk_demod_0, 0))
         self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.blocks_tagged_stream_align_0, 0))
         self.connect((self.blocks_tagged_stream_align_0, 0), (self.pdu_tagged_stream_to_pdu_0, 0))
         self.connect((self.blocks_throttle2_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.digital_correlate_access_code_xx_ts_0, 0))
         self.connect((self.digital_correlate_access_code_xx_ts_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
         self.connect((self.digital_gfsk_demod_0, 0), (self.blocks_throttle2_0, 0))
+        self.connect((self.outputFromTX, 0), (self.digital_gfsk_demod_0, 0))
         self.connect((self.pdu_pdu_to_tagged_stream_0, 0), (self.Output, 0))
 
 

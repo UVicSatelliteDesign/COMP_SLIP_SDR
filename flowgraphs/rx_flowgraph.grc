@@ -253,9 +253,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2096, 92.0]
+    coordinate: [96, 332.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_pack_k_bits_bb_0
   id: blocks_pack_k_bits_bb
   parameters:
@@ -375,11 +375,11 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    host: ''
+    host: host_ip
     maxoutbuf: '0'
     minoutbuf: '0'
     mtu: '1500'
-    port: '52001'
+    port: tcp_port
     tcp_no_delay: 'False'
     type: TCP_SERVER
   states:
@@ -406,9 +406,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2408, 72.0]
+    coordinate: [408, 312.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: outputFromTX
   id: blocks_file_source
   parameters:
