@@ -5,11 +5,11 @@ import socket
 import numpy as np
 
 # File names & connection settings
-TX_FILE = "tx_baseband.cfile"
-RX_OUTPUT = "output.txt"
+TX_FILE = os.path.join("scripts", "tx_baseband.cfile")
+RX_OUTPUT = os.path.join("scripts", "output.txt")
 HOST = '127.0.0.1'
 PORT = 52001  # Must match the TX flowgraph socket port
-TEST_MESSAGE = b"TEST123456789"  # Test message to send over the socket
+TEST_MESSAGE = b"TEST123"  # Test message to send over the socket
 
 def run_process(command, wait=0):
     """Start a process with the given command and return the Popen object."""
@@ -63,15 +63,15 @@ def check_rx_output(expected_bytes):
 if __name__ == "__main__":
     ### Test 1: TX flowgraph – send data over socket and check .cfile generated ###
     print("=== Test 1: TX Flowgraph: socket connection and .cfile generation ===")
-    # Start the TX flowgraph. Adjust command if your executable is different.
-    tx_proc = run_process("python tx_flowgraph.py", wait=3)
+    # Update command to point to the correct file location:
+    tx_proc = run_process("python flowgraphs/tx_flowgraph.py", wait=3)
     try:
         send_test_message()  # Send the test message over TX socket
 
         # Allow some time for the flowgraph to process and write to file
         time.sleep(3)
     finally:
-        print("[INFO] Terminating TX flowgraph...")
+        print("[INFO] Terminating TX flowgraph...") 
         tx_proc.terminate()
         tx_proc.wait()
 
@@ -80,9 +80,9 @@ if __name__ == "__main__":
 
     ### Test 2: RX flowgraph – decode the .cfile and verify decoded output ###
     print("\n=== Test 2: RX Flowgraph: decoding .cfile ===")
-    rx_proc = run_process("python rx_flowgraph.py", wait=3)
+    rx_proc = run_process("python flowgraphs/rx_flowgraph.py", wait=3)
     try:
-        # Allow time for the RX flowgraph to read file and output data
+        # Allow time for the RX flowgraph to read the file and output data
         time.sleep(3)
     finally:
         print("[INFO] Terminating RX flowgraph...")
