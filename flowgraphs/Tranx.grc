@@ -83,7 +83,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [56, 180.0]
+    coordinate: [88, 180.0]
     rotation: 0
     state: enabled
 - name: digital_gfsk_mod_0
@@ -134,7 +134,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: C:\Users\degan\OneDrive\Documents\Work\Projects\UVSD\Information\raspiENV\scripts\tx_baseband.cfile
+    file: /home/groundstation/COMP_SLIP_SDR/scripts/tx_baseband.cfile
     type: complex
     unbuffered: 'False'
     vlen: '1'

@@ -196,7 +196,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: C:\Users\degan\OneDrive\Documents\Work\Projects\UVSD\Information\raspiENV\scripts\output.txt
+    file: /home/groundstation/COMP_SLIP_SDR/scripts/output.txt
     type: byte
     unbuffered: 'True'
     vlen: '1'
@@ -416,7 +416,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: C:\Users\degan\OneDrive\Documents\Work\Projects\UVSD\Information\raspiENV\scripts\tx_baseband.cfile
+    file: /home/groundstation/COMP_SLIP_SDR/scripts/tx_baseband.cfile
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'

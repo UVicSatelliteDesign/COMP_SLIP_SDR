@@ -73,7 +73,7 @@ class Tranx(gr.top_block, Qt.QWidget):
         ##################################################
 
         self.pdu_pdu_to_tagged_stream_0 = pdu.pdu_to_tagged_stream(gr.types.byte_t, 'packet_len')
-        self.outputFromTX = blocks.file_sink(gr.sizeof_gr_complex*1, 'C:\\Users\\degan\\OneDrive\\Documents\\Work\\Projects\\UVSD\\Information\\raspiENV\\scripts\\tx_baseband.cfile', False)
+        self.outputFromTX = blocks.file_sink(gr.sizeof_gr_complex*1, '/home/groundstation/COMP_SLIP_SDR/scripts/tx_baseband.cfile', False)
         self.outputFromTX.set_unbuffered(False)
         self.network_socket_pdu_0_0 = network.socket_pdu('TCP_SERVER', host_ip, tcp_port, 10000, False)
         self.digital_gfsk_mod_0 = digital.gfsk_mod(

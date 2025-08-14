@@ -87,7 +87,7 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         self.satellites_crc_check_0 = satellites.crc_check(16, crc_poly, 0xFFFFFFFF, 0xFFFFFFFF, True, True, False, False, 0)
         self.pdu_tagged_stream_to_pdu_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, 'packet_len')
         self.pdu_pdu_to_tagged_stream_0 = pdu.pdu_to_tagged_stream(gr.types.byte_t, 'packet_len')
-        self.outputFromTX = blocks.file_source(gr.sizeof_gr_complex*1, 'C:\\Users\\degan\\OneDrive\\Documents\\Work\\Projects\\UVSD\\Information\\raspiENV\\scripts\\tx_baseband.cfile', False, 0, 0)
+        self.outputFromTX = blocks.file_source(gr.sizeof_gr_complex*1, '/home/groundstation/COMP_SLIP_SDR/scripts/tx_baseband.cfile', False, 0, 0)
         self.outputFromTX.set_begin_tag(pmt.PMT_NIL)
         self.network_socket_pdu_0 = network.socket_pdu('TCP_SERVER', host_ip, tcp_port, 1500, False)
         self.digital_gfsk_demod_0 = digital.gfsk_demod(
@@ -107,7 +107,7 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(K)
         self.blocks_message_debug_0_0 = blocks.message_debug(True, gr.log_levels.err)
         self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
-        self.Output = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\degan\\OneDrive\\Documents\\Work\\Projects\\UVSD\\Information\\raspiENV\\scripts\\output.txt', False)
+        self.Output = blocks.file_sink(gr.sizeof_char*1, '/home/groundstation/COMP_SLIP_SDR/scripts/output.txt', False)
         self.Output.set_unbuffered(True)
 
 
