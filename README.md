@@ -1,12 +1,12 @@
 # COMP_SLIP_SDR
 
-This repository contains the implementation of a custom data link layer protocol between a LimeSDR Mini (Ground Station) and a CC1201 transceiver (Satellite) using GNU Radio.
+This repository contains the code for the Ground Station (GS) side of a custom data link layer protocol between a LimeSDR Mini and a CC1201 transceiver on the satellite side using GNU Radio.
 
 ## Communication Overview
 
-- **Mode:** Half-Duplex
+- **Mode:** Half-Duplex (Due to CC1201 constraints)
 - **Topology:** Point-to-Point
-- **Bandwidth:** 1.2 Mbps
+- **Bandwidth:** 30.72e6
 - **Frequency:** Sub-920 MHz (set at runtime)
 - **Tools:** GNU Radio, LimeSuite, Python
 - **Transceivers:** LimeSDR Mini (GS), CC1201 (Satellite)
@@ -25,9 +25,9 @@ This repository contains the implementation of a custom data link layer protocol
 
 ### Payload Format
 
-- **Payload Type:** 4 bits
-- **Sequence Number:** 15 bits
-- **Offset:** 17 bits (if camera data)
+- **Payload Type:** 8 bits
+- **Sequence Number:** 16 bits
+- **Offset:** 16 bits (if camera data otherwise 0 bits)
 - **Data:** Variable-length (depends on payload type)
 
 ---
@@ -38,6 +38,7 @@ This repository contains the implementation of a custom data link layer protocol
   - ACK/NACK handling  
   - Lost-state ping recovery
 - **CRC:** 16-bit checksum
+
 ---
 
 ### OSI Layer Mapping
@@ -47,63 +48,75 @@ This repository contains the implementation of a custom data link layer protocol
 | Physical      | LimeSDR RF front-end             |
 | Data Link     | GNU Radio custom framing         |
 | Network       | Python `Receiver` class          |
-| Network       | Python 'Transceiver' class       |
+| Network       | Python `Transceiver` class       |
 | Transport     | Host-side logic in `main.py`     |
 
 ---
 
-### 📡 Frame Synchronization & Decoding Flow (GNU Radio)
+## Current Development Status
+
+We have implemented a **full offline TX/RX testing pipeline** in GNU Radio to validate framing, modulation, and decoding without requiring live RF hardware.
+
+**TX Flowgraph:**
+- Starts with `Message Strobe` + `Socket to PDU`
+- Encodes and modulates packets
+- Ends in `File Sink` writing **`tx_baseband.cfile`** (raw complex baseband samples)
+
+**RX Flowgraph:**
+- Starts with `File Source` reading **`tx_baseband.cfile`**
+- Demodulates and decodes packets
+- Ends in `File Sink` writing **`output.txt`** (decoded messages)
+
+**Testing Progress:**
+- [PASS] TX connects via socket (TX Flowgraph)
+- [PASS] TX generates `.cfile` with valid, non-zero IQ samples (TX Flowgraph)  
+- [PASS] `.cfile` contains correct modulation pattern for known test messages (File Integrity)  
+- [PENDING] Feeding `.cfile` into RX produces correct packet decoding in `output.txt` (RX Loopback)  
+- [PENDING] Frame validation (preamble + sync word detection) pending (Frame Validation)  
+- [PENDING] CRC error handling pending (CRC Error Handling)  
+- [PENDING] Max payload size test pending (Payload Size)  
+- [PENDING] Min payload size test pending (Minimum Payload)  
+- [PENDING] End-to-end integration pending (End-to-End Integration)  
+
+---
+
+### TX
 
 ```text
-[Input Source]
+[Message Strobe]                # Periodically sends a predefined test message (payload)
      ↓
-[Unpack K Bits]
+[Socket to PDU]                 # Receives PDUs (Protocol Data Units) over TCP/UDP socket
      ↓
-[Correlate Access Code - Tag Stream]   ← detects sync
+[PDU to Tagged Stream]          # Converts discrete PDUs into a continuous stream with length tags
      ↓
-[Pack K Bits]
+[GFSK Mod]                      # Performs Gaussian Frequency Shift Keying modulation
      ↓
-[Tagged Stream Align]                  ← aligns stream
-     ↓
-[Fixed Length Tagger]                  ← reads length byte
-     ↓
-[Tagged Stream to PDU]                 ← converts to packets
-     ↓
-[Message Debug / Python CRC Checker]   ← final output
+[Soapy LimeSDR Sink]            # Sends modulated baseband samples to the LimeSDR for RF transmission
+
 ```
 
 ---
 
-### Flowgraph Testing Instructions
+### RX
 
-This test framework simulates full end-to-end message flow using GNU Radio and Python. It verifies that sample packets can be sent from a Python script, processed by the flowgraph, and parsed for validation.
-
-### Step-by-Step Instructions
-
-1. **Launch the Flowgraph**
-   - Open the `testing_connection.grc` flowgraph in GNU Radio Companion (GRC).
-   - Run the flowgraph. It will begin listening for incoming binary data over a local TCP socket via the **Socket PDU** block.
-
-2. **Send Test Packets**
-   - Make sure you have your `test_packets.txt` file ready with the desired sample packets (in hex format).
-   - Run the Python script to transmit those test packets into the flowgraph:
-     ```bash
-     python scripts/send_test.py
-     ```
-
-3. **Parse the Output**
-   - Once the packets are processed by GNU Radio, they are written into `output.txt`.
-   - Run the parser script to convert and display the output in a human-readable format:
-     ```bash
-     python scripts/parse_output.py
-     ```
-
-### Example Testing Workflow
-
-```bash
-# Step 1 - From GNU Radio Companion, run testing_connection.grc
-# Step 2 - From terminal
-python scripts/send_test.py
-# Step 3 - Evaluate results
-python scripts/parse_output.py
-
+```text
+[Soapy LimeSDR Source]          # Captures baseband IQ samples from the LimeSDR
+     ↓
+[GFSK Demod]                    # Demodulates the GFSK-modulated signal into a bitstream
+     ↓
+[Throttle]                      # Limits sample rate for consistency
+     ↓
+[Unpack K bits]                 # Splits bytes into individual bits for processing
+     ↓
+[Correlate Access Code - Tag Stream]  # Detects sync word/preamble and tags packet start
+     ↓
+[Pack K bits]                   # Groups bits back into bytes after sync detection
+     ↓
+[Tagged Stream Align]           # Ensures byte alignment in the tagged stream
+     ↓
+[Tagged Stream to PDU]          # Converts tagged byte stream into PDUs
+     ↓
+[CRC Check]                     # Verifies packet integrity using CRC-16
+     ↓
+[Socket To PDU]                 # Sends recovered PDUs to a host application over TCP/UDP         
+  ```
