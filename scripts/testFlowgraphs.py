@@ -105,12 +105,13 @@ if __name__ == "__main__":
         # Wait until the file is populated.
         wait_for_file_to_fill(TX_FILE, timeout=30, poll_interval=2)
     finally:
-        print("[INFO] Terminating TX flowgraph using SIGTERM for graceful shutdown...")
-        tx_proc.terminate()  # Send SIGTERM TODO: Find better solution
+        print("[INFO] Terminating TX flowgraph using pkill with SIGINT for graceful shutdown...")
+        # Use pkill to send SIGINT to the specific flowgraph process
+        subprocess.run(["pkill", "-SIGINT", "-f", "Tranx.py"], check=False)
         try:
             tx_proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
-            print("[WARN] Process did not exit in time on SIGTERM; sending SIGKILL...")
+            print("[WARN] Process did not exit in time on SIGINT; sending SIGKILL...")
             tx_proc.kill()
             tx_proc.wait()
         time.sleep(2) # Delay for process to output data
