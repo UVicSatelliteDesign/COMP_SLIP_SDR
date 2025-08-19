@@ -11,7 +11,6 @@
 from PyQt5 import Qt
 from gnuradio import qtgui
 from gnuradio import blocks
-import pmt
 from gnuradio import digital
 from gnuradio import gr
 from gnuradio.filter import firdes
@@ -83,13 +82,11 @@ class Tranx(gr.top_block, Qt.QWidget):
             verbose=False,
             log=False,
             do_unpack=True)
-        self.blocks_message_strobe_0_0 = blocks.message_strobe(pmt.cons(pmt.make_dict(), pmt.make_u8vector(4, ord('x'))), 1000)
 
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.blocks_message_strobe_0_0, 'strobe'), (self.network_socket_pdu_0_0, 'pdus'))
         self.msg_connect((self.network_socket_pdu_0_0, 'pdus'), (self.pdu_pdu_to_tagged_stream_0, 'pdus'))
         self.connect((self.digital_gfsk_mod_0, 0), (self.outputFromTX, 0))
         self.connect((self.pdu_pdu_to_tagged_stream_0, 0), (self.digital_gfsk_mod_0, 0))

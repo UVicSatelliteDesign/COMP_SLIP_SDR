@@ -85,7 +85,7 @@ blocks:
     bus_structure: null
     coordinate: [88, 180.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: digital_gfsk_mod_0
   id: digital_gfsk_mod
   parameters:
