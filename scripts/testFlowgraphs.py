@@ -7,13 +7,57 @@ import socket
 import numpy as np
 import signal
 
-# File names & connection settings
+
+# ================= Global Constants (configuration) ================= #
 TX_FILE = os.path.join("scripts", "tx_baseband.cfile")
 RX_OUTPUT = os.path.join("scripts", "output.txt")
 HOST = '127.0.0.1'
-PORT = 52001  # Changed port for testing; update Tranx.py accordingly if you make this change
-TEST_MESSAGE = b"TEST123"  # Test message to send over the socket
+PORT = 52001  # Must match port in Tranx.py
 
+# Framing parameters
+PREAMBLE = b"\xAA"          # 8-bit preamble 0b10101010
+SYNC_WORD = 0x00000001       # 32-bit sync word value
+CRC_POLY = 0x8005            # CRC-16-IBM polynomial
+CRC_INIT = 0xFFFF            # CRC-16 initial value
+
+# Test payload (raw application data)
+RAW_PAYLOAD = b"TEST123"
+
+# Placeholders (populated after helper definitions)
+TEST_MESSAGE: bytes  = b""   # Full framed message populated after helpers
+EXPECTED_PAYLOAD = RAW_PAYLOAD
+
+
+# CRC Helper
+def crc16_ibm(data: bytes, poly: int = CRC_POLY, init_val: int = CRC_INIT) -> int:
+    """Compute CRC-16-IBM (a.k.a. CRC-16-ANSI) over data."""
+    crc = init_val
+    for byte in data:
+        crc ^= (byte << 8)
+        for _ in range(8):
+            if crc & 0x8000:
+                crc = ((crc << 1) ^ poly) & 0xFFFF
+            else:
+                crc = (crc << 1) & 0xFFFF
+    return crc
+
+# CRC Helper
+def build_frame(payload: bytes) -> bytes:
+    """Build custom frame: PREAMBLE(0xAA) | SYNC(0x00000001) | LEN | PAYLOAD | CRC16.
+
+    NOTE: LEN is payload length only (1 byte). CRC is over payload only.
+    """
+    preamble = PREAMBLE
+    sync_word = SYNC_WORD.to_bytes(4, 'big')
+    length = len(payload).to_bytes(1, 'big')
+    crc_val = crc16_ibm(payload)
+    crc_bytes = crc_val.to_bytes(2, 'big')
+    return preamble + sync_word + length + payload + crc_bytes
+
+# Build framed test message now that helpers exist
+TEST_MESSAGE = build_frame(RAW_PAYLOAD)
+
+# Begin executing flowgraph
 def run_process(command, wait=0):
     """
     Start a process with the given command and return the Popen object
@@ -26,6 +70,8 @@ def run_process(command, wait=0):
     time.sleep(wait)
     return proc
 
+# TODO: This function is flawed. Showed issues recognizing whether the file was written to or not. 
+# That's why we created TEST_tx_baseband.py to read the file and interpret the data visually. 
 def check_file_exists(path):
     """
     Check that a file exists and is non-empty.
@@ -37,6 +83,9 @@ def check_file_exists(path):
         raise ValueError(f"{path} is empty.")
     print(f"[PASS] {path} exists, size: {size} bytes")
 
+
+# TODO: This function is flawed. Showed issues recognizing whether the file was written to or not. 
+# That's why we created TEST_tx_baseband.py to read the file and interpret the data visually. 
 def check_cfile_nonzero(path):
     """
     Check that .cfile contains non-zero complex data.
@@ -48,6 +97,8 @@ def check_cfile_nonzero(path):
         raise ValueError(f"{path} contains only zeros.")
     print(f"[PASS] {path} contains {len(data)} complex samples.")
 
+# TODO: This function is flawed. Showed issues recognizing whether the file was written to or not. 
+# That's why we created TEST_tx_baseband.py to read the file and interpret the data visually. 
 def wait_for_file_to_fill(filepath, timeout=30, poll_interval=1):
     """
     Wait until the file exists and its size is non-zero, or until timeout.
@@ -64,6 +115,7 @@ def wait_for_file_to_fill(filepath, timeout=30, poll_interval=1):
         time.sleep(poll_interval)
     raise TimeoutError(f"Timeout: {filepath} did not fill with data within {timeout} seconds.")
 
+# Connection and transfer of data function
 def send_test_message():
     """
     Connect to the TX socket and send a test message
@@ -76,7 +128,7 @@ def send_test_message():
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((HOST, PORT))
                 s.send(TEST_MESSAGE)
-                print(f"[PASS] Sent test message: {TEST_MESSAGE.decode()}")
+                print(f"[PASS] Sent framed test message (payload={RAW_PAYLOAD.decode()})")
                 return
         except ConnectionRefusedError:
             print(f"[WARN] Connection attempt {i+1} failed. Retrying in {delay} seconds...")
@@ -93,21 +145,21 @@ def check_rx_output(expected_bytes):
         contents = f.read().strip()
     print(f"[INFO] RX output (hex): {contents.hex()}")
     if expected_bytes not in contents:
-        raise AssertionError(f"Expected {expected_bytes} in RX output, got {contents}.")
-    print(f"[PASS] RX output contains the expected message.")
+        raise AssertionError(
+            f"Expected payload {expected_bytes} in RX output, got {contents.hex()} (len={len(contents)})"
+        )
+    print(f"[PASS] RX output contains expected payload {expected_bytes}.")
 
+# Execution order
 if __name__ == "__main__":
     print("=== Test 1: Tranx: socket connection and .cfile generation ===")
-    # Launch the TX flowgraph (make sure its port matches PORT)
-    tx_proc = run_process("python3 flowgraphs/Tranx.py", wait=7)  # Allow for startup
+    tx_proc = run_process("python3 flowgraphs/Tranx.py", wait=7)      # Launch the TX flowgraph and allow for startup
     try:
         send_test_message()  # Send the test message over TX socket
-        # Wait until the file is populated.
-        # wait_for_file_to_fill(TX_FILE, timeout=30, poll_interval=2)
+        # wait_for_file_to_fill(TX_FILE, timeout=30, poll_interval=2) TODO: Check the validity of this function later
     finally:
         print("[INFO] Terminating TX flowgraph using pkill with SIGINT for graceful shutdown...")
-        # Use pkill to send SIGINT to the specific flowgraph process
-        subprocess.run(["pkill", "-SIGINT", "-f", "Tranx.py"], check=False)
+        subprocess.run(["pkill", "-SIGINT", "-f", "Tranx.py"], check=False) # Safest way I could find to end the process
         try:
             tx_proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
@@ -119,14 +171,13 @@ if __name__ == "__main__":
     check_file_exists(TX_FILE)
     check_cfile_nonzero(TX_FILE)
 
-    ### Test 2: RX flowgraph – decode the .cfile and verify decoded output ###
     print("\n=== Test 2: RX Flowgraph: decoding .cfile ===")
     rx_proc = run_process("python3 flowgraphs/rx_flowgraph.py", wait=7)
     try:
         time.sleep(7)  # time for RX flowgraph to process the file and output data
     finally:
         print("[INFO] Terminating RX flowgraph using pkill with SIGINT for graceful shutdown...")
-        subprocess.run(["pkill", "-SIGINT", "-f", "rx_flowgraph.py"], check=False)
+        subprocess.run(["pkill", "-SIGINT", "-f", "rx_flowgraph.py"], check=False) # Safest way to kill the process
         try:
             rx_proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
@@ -136,6 +187,6 @@ if __name__ == "__main__":
         time.sleep(1)  # brief delay to allow final buffers to flush
 
     check_file_exists(RX_OUTPUT)
-    check_rx_output(TEST_MESSAGE)
+    check_rx_output(EXPECTED_PAYLOAD)
 
     print("\nAll tests passed successfully!")
