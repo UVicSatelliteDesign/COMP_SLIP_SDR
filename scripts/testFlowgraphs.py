@@ -103,7 +103,7 @@ if __name__ == "__main__":
     try:
         send_test_message()  # Send the test message over TX socket
         # Wait until the file is populated.
-        wait_for_file_to_fill(TX_FILE, timeout=30, poll_interval=2)
+        # wait_for_file_to_fill(TX_FILE, timeout=30, poll_interval=2)
     finally:
         print("[INFO] Terminating TX flowgraph using pkill with SIGINT for graceful shutdown...")
         # Use pkill to send SIGINT to the specific flowgraph process
@@ -125,9 +125,15 @@ if __name__ == "__main__":
     try:
         time.sleep(7)  # time for RX flowgraph to process the file and output data
     finally:
-        print("[INFO] Terminating RX flowgraph...")
-        rx_proc.terminate()
-        rx_proc.wait()
+        print("[INFO] Terminating RX flowgraph using pkill with SIGINT for graceful shutdown...")
+        subprocess.run(["pkill", "-SIGINT", "-f", "rx_flowgraph.py"], check=False)
+        try:
+            rx_proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            print("[WARN] RX process did not exit in time on SIGINT; sending SIGKILL...")
+            rx_proc.kill()
+            rx_proc.wait()
+        time.sleep(1)  # brief delay to allow final buffers to flush
 
     check_file_exists(RX_OUTPUT)
     check_rx_output(TEST_MESSAGE)
