@@ -27,6 +27,12 @@ RAW_PAYLOAD = b"TEST123"
 TEST_MESSAGE: bytes  = b""   # Full framed message populated after helpers
 EXPECTED_PAYLOAD = RAW_PAYLOAD
 
+# Multi-message test parameters
+NUM_TEST_MESSAGES = 200            # Number of framed messages to send to TX socket
+INTER_MESSAGE_DELAY = 0.005        # Seconds to wait between consecutive sends
+TX_STARTUP_WAIT_SECONDS = 15        # Time to allow TX flowgraph to run before sending messages / shutdown
+SINGLE_MESSAGE_REPEATS = 5          # How many times legacy send_test_message repeats the frame
+
 
 # CRC Helper
 def crc16_ibm(data: bytes, poly: int = CRC_POLY, init_val: int = CRC_INIT) -> int:
@@ -116,23 +122,58 @@ def wait_for_file_to_fill(filepath, timeout=30, poll_interval=1):
     raise TimeoutError(f"Timeout: {filepath} did not fill with data within {timeout} seconds.")
 
 # Connection and transfer of data function
-def send_test_message():
+def send_test_message():  # kept for backward compatibility / single-shot diagnostics
+    """Send a few repeats of the framed test message over a single connection.
+
+    Uses SMALL loop (SINGLE_MESSAGE_REPEATS) to generate a slightly longer .cfile
+    without invoking the bulk multi-message helper.
     """
-    Connect to the TX socket and send a test message
-    """
-    print("\n[INFO] Connecting to TX socket to send test data...")
+    print(f"\n[INFO] Connecting to TX socket to send {SINGLE_MESSAGE_REPEATS} repeated framed messages (legacy helper)...")
     attempts = 5
-    delay = 1  # seconds between attempts
+    attempt_delay = 1
     for i in range(attempts):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((HOST, PORT))
-                s.send(TEST_MESSAGE)
-                print(f"[PASS] Sent framed test message (payload={RAW_PAYLOAD.decode()})")
+                start = time.time()
+                for _ in range(SINGLE_MESSAGE_REPEATS):
+                    s.sendall(TEST_MESSAGE)
+                elapsed = time.time() - start
+                total_bytes = len(TEST_MESSAGE) * SINGLE_MESSAGE_REPEATS
+                print(f"[PASS] Sent {SINGLE_MESSAGE_REPEATS} repeats -> {total_bytes} bytes in {elapsed:.3f}s")
                 return
         except ConnectionRefusedError:
-            print(f"[WARN] Connection attempt {i+1} failed. Retrying in {delay} seconds...")
-            time.sleep(delay)
+            print(f"[WARN] Connection attempt {i+1} failed. Retrying in {attempt_delay} seconds...")
+            time.sleep(attempt_delay)
+    raise ConnectionRefusedError(f"Failed to connect to {HOST}:{PORT} after {attempts} attempts.")
+
+
+def send_multiple_test_messages(count=NUM_TEST_MESSAGES, delay=INTER_MESSAGE_DELAY):
+    """Connect once to the TX socket and send 'count' framed test messages.
+
+    Parameters:
+        count (int): Number of messages to send.
+        delay (float): Delay in seconds between each message to pace the flowgraph.
+    """
+    print(f"\n[INFO] Connecting to TX socket to send {count} framed test messages...")
+    attempts = 5
+    attempt_delay = 1
+    for i in range(attempts):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((HOST, PORT))
+                start = time.time()
+                for n in range(count):
+                    s.sendall(TEST_MESSAGE)
+                    if delay > 0:
+                        time.sleep(delay)
+                elapsed = time.time() - start
+                total_bytes = len(TEST_MESSAGE) * count
+                print(f"[PASS] Sent {count} messages (payload={RAW_PAYLOAD.decode()}) -> {total_bytes} bytes in {elapsed:.2f}s")
+                return
+        except ConnectionRefusedError:
+            print(f"[WARN] Connection attempt {i+1} failed. Retrying in {attempt_delay} seconds...")
+            time.sleep(attempt_delay)
     raise ConnectionRefusedError(f"Failed to connect to {HOST}:{PORT} after {attempts} attempts.")
 
 def check_rx_output(expected_bytes):
@@ -153,9 +194,9 @@ def check_rx_output(expected_bytes):
 # Execution order
 if __name__ == "__main__":
     print("=== Test 1: Tranx: socket connection and .cfile generation ===")
-    tx_proc = run_process("python3 flowgraphs/Tranx.py", wait=7)      # Launch the TX flowgraph and allow for startup
+    tx_proc = run_process("python3 flowgraphs/Tranx.py", wait=TX_STARTUP_WAIT_SECONDS)  # Extended runtime before sending
     try:
-        send_test_message()  # Send the test message over TX socket
+        send_multiple_test_messages()  # Send many messages to generate sufficient samples
         # wait_for_file_to_fill(TX_FILE, timeout=30, poll_interval=2) TODO: Check the validity of this function later
     finally:
         print("[INFO] Terminating TX flowgraph using pkill with SIGINT for graceful shutdown...")
@@ -166,7 +207,7 @@ if __name__ == "__main__":
             print("[WARN] Process did not exit in time on SIGINT; sending SIGKILL...")
             tx_proc.kill()
             tx_proc.wait()
-        time.sleep(2) # Delay for process to output data
+        time.sleep(2.5) # Slightly longer delay to ensure buffers flushed for larger sample set
 
     check_file_exists(TX_FILE)
     check_cfile_nonzero(TX_FILE)
