@@ -17,17 +17,17 @@ This repository contains the code for the Ground Station (GS) side of a custom d
 
 | Field         | Size      |
 |---------------|-----------|
-| Preamble      | 8 bits    |
-| Sync Word     | 32 bits   |
-| Length Field  | 8 bits    |
-| Payload       | Variable  |
-| CRC           | 16 bits   |
+| Preamble      | 1 byte    |
+| Sync Word     | 4 bytes   |
+| Length Field  | 1 byte    |
+| Payload       | 120 bytes |
+| CRC           | 2 bytes   |
 
 ### Payload Format
 
-- **Payload Type:** 8 bits
-- **Sequence Number:** 16 bits
-- **Offset:** 16 bits (if camera data otherwise 0 bits)
+- **Payload Type:** 1 byte
+- **Sequence Number:** 2 bytes
+- **Offset:** 3 bytes (if camera data otherwise 0 bits)
 - **Data:** Variable-length (depends on payload type)
 
 ---

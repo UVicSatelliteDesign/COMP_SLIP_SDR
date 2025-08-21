@@ -7,6 +7,20 @@ import socket
 import numpy as np
 import signal
 
+from receiver import ReceivedPacket
+from transmitter import GroundStationTransmitter
+
+
+def test_transmitter_receiver():
+    print("\n=== Test 0: Transmitter and Receiver Packet Construction ===")
+    # Instantiate GroundStationTransmitter with dummy data
+    gst = GroundStationTransmitter(payload_type=None, payload_data=b"PING", payload_length=4, seq_num=1, offset=b'\x00\x00\x00')
+    ping_packet = gst.ping()
+    print(f"Generated ping packet: {ping_packet.hex()}")
+    # Parse the generated packet using ReceivedPacket
+    rp = ReceivedPacket(ping_packet)
+    print(f"Parsed packet: {rp}")
+
 
 # ================= Global Constants (configuration) ================= #
 TX_FILE = os.path.join("scripts", "tx_baseband.cfile")
@@ -15,26 +29,29 @@ HOST = '127.0.0.1'
 PORT = 52001  # Must match port in Tranx.py
 
 # Framing parameters
-PREAMBLE = b"\xAA"          # 8-bit preamble 0b10101010
-SYNC_WORD = 0x00000001       # 32-bit sync word value
-CRC_POLY = 0x8005            # CRC-16-IBM polynomial
-CRC_INIT = 0xFFFF            # CRC-16 initial value
+PREAMBLE = b"\xAA"            # 8-bit preamble 0b10101010
+SYNC_WORD = 0x00000001        # 32-bit sync word value
+CRC_POLY = 0x8005             # CRC-16-IBM polynomial
+CRC_INIT = 0xFFFF             # CRC-16 initial value
+MAX_PAYLOAD_LEN = 120         # fixed payload size (bytes)
+TOTAL_FRAME_LEN = 128         # entire frame length (bytes)
 
 # Test payload (raw application data)
 RAW_PAYLOAD = b"TEST123"
 
 # Placeholders (populated after helper definitions)
-TEST_MESSAGE: bytes  = b""   # Full framed message populated after helpers
+TEST_MESSAGE: bytes = b""     # Full framed message populated after helpers
 EXPECTED_PAYLOAD = RAW_PAYLOAD
 
 # Multi-message test parameters
-NUM_TEST_MESSAGES = 200            # Number of framed messages to send to TX socket
-INTER_MESSAGE_DELAY = 0.005        # Seconds to wait between consecutive sends
-TX_STARTUP_WAIT_SECONDS = 15        # Time to allow TX flowgraph to run before sending messages / shutdown
-SINGLE_MESSAGE_REPEATS = 5          # How many times legacy send_test_message repeats the frame
+NUM_TEST_MESSAGES = 200
+INTER_MESSAGE_DELAY = 0.005
+TX_STARTUP_WAIT_SECONDS = 15
+SINGLE_MESSAGE_REPEATS = 5
 
 
-# CRC Helper
+# ================= Helper Functions ================= #
+
 def crc16_ibm(data: bytes, poly: int = CRC_POLY, init_val: int = CRC_INIT) -> int:
     """Compute CRC-16-IBM (a.k.a. CRC-16-ANSI) over data."""
     crc = init_val
@@ -47,21 +64,34 @@ def crc16_ibm(data: bytes, poly: int = CRC_POLY, init_val: int = CRC_INIT) -> in
                 crc = (crc << 1) & 0xFFFF
     return crc
 
-# CRC Helper
-def build_frame(payload: bytes) -> bytes:
-    """Build custom frame: PREAMBLE(0xAA) | SYNC(0x00000001) | LEN | PAYLOAD | CRC16.
 
-    NOTE: LEN is payload length only (1 byte). CRC is over payload only.
+def pad_payload(payload: bytes) -> bytes:
+    """Ensure payload is exactly MAX_PAYLOAD_LEN bytes."""
+    if len(payload) > MAX_PAYLOAD_LEN:
+        return payload[:MAX_PAYLOAD_LEN]
+    return payload.ljust(MAX_PAYLOAD_LEN, b'\x00')
+
+
+def build_frame(payload: bytes) -> bytes:
+    """
+    Build fixed-length frame:
+    PREAMBLE(1) | SYNC(4) | LEN(1=120) | PAYLOAD(120) | CRC16(2)
     """
     preamble = PREAMBLE
     sync_word = SYNC_WORD.to_bytes(4, 'big')
-    length = len(payload).to_bytes(1, 'big')
-    crc_val = crc16_ibm(payload)
+    padded_payload = pad_payload(payload)
+    length_field = (len(padded_payload)).to_bytes(1, 'big')
+    crc_val = crc16_ibm(padded_payload)
     crc_bytes = crc_val.to_bytes(2, 'big')
-    return preamble + sync_word + length + payload + crc_bytes
+    frame = preamble + sync_word + length_field + padded_payload + crc_bytes
+
+    assert len(frame) == TOTAL_FRAME_LEN, f"Frame length {len(frame)} != {TOTAL_FRAME_LEN}"
+    return frame
+
 
 # Build framed test message now that helpers exist
 TEST_MESSAGE = build_frame(RAW_PAYLOAD)
+
 
 # Begin executing flowgraph
 def run_process(command, wait=0):
@@ -75,6 +105,7 @@ def run_process(command, wait=0):
     proc = subprocess.Popen(command, shell=True, env=env)
     time.sleep(wait)
     return proc
+
 
 # TODO: This function is flawed. Showed issues recognizing whether the file was written to or not. 
 # That's why we created TEST_tx_baseband.py to read the file and interpret the data visually. 
@@ -176,6 +207,7 @@ def send_multiple_test_messages(count=NUM_TEST_MESSAGES, delay=INTER_MESSAGE_DEL
             time.sleep(attempt_delay)
     raise ConnectionRefusedError(f"Failed to connect to {HOST}:{PORT} after {attempts} attempts.")
 
+
 def check_rx_output(expected_bytes):
     """
     Check that the RX output contains the expected message.
@@ -191,8 +223,10 @@ def check_rx_output(expected_bytes):
         )
     print(f"[PASS] RX output contains expected payload {expected_bytes}.")
 
+
 # Execution order
 if __name__ == "__main__":
+    test_transmitter_receiver()
     print("=== Test 1: Tranx: socket connection and .cfile generation ===")
     tx_proc = run_process("python3 flowgraphs/Tranx.py", wait=TX_STARTUP_WAIT_SECONDS)  # Extended runtime before sending
     try:
