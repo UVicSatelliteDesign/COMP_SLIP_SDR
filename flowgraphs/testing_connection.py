@@ -85,7 +85,7 @@ class testing_connection(gr.top_block, Qt.QWidget):
         self.blocks_message_strobe_0 = blocks.message_strobe(pmt.cons(pmt.make_dict(), pmt.make_u8vector(4, ord('x')))
         , 1000)
         self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
-        self.Output = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\degan\\OneDrive\\Documents\\Work\\Projects\\UVSD\\Information\\raspiENV\\scripts\\output.txt', False)
+        self.Output = blocks.file_sink(gr.sizeof_char*1, 'output.txt', False)
         self.Output.set_unbuffered(True)
 
 
