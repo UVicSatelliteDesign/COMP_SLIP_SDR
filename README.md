@@ -65,13 +65,13 @@ We have implemented a **full offline TX/RX testing pipeline** in GNU Radio to va
 **RX Flowgraph:**
 - Starts with `File Source` reading **`tx_baseband.cfile`**
 - Demodulates and decodes packets
-- Ends in `File Sink` writing **`output.txt`** (decoded messages)
+- Ends in `File Sink` writing **`rx_output.txt`** (decoded messages)
 
 **Testing Progress:**
 - [PASS] TX connects via socket (TX Flowgraph)
 - [PASS] TX generates `.cfile` with valid, non-zero IQ samples (TX Flowgraph)  
 - [PASS] `.cfile` contains correct modulation pattern for known test messages (File Integrity)  
-- [PENDING] Feeding `.cfile` into RX produces correct packet decoding in `output.txt` (RX Loopback)  
+- [PASS] Feeding `.cfile` into RX produces correct packet decoding in `rx_output.txt` (RX Loopback)  
 - [PENDING] Frame validation (preamble + sync word detection) pending (Frame Validation)  
 - [PENDING] CRC error handling pending (CRC Error Handling)  
 - [PENDING] Max payload size test pending (Payload Size)  
@@ -83,15 +83,19 @@ We have implemented a **full offline TX/RX testing pipeline** in GNU Radio to va
 ### TX
 
 ```text
-[Message Strobe]                # Periodically sends a predefined test message (payload)
+[Message Strobe/Socket PDU]   # Periodically sends a predefined test message (payload)
      ↓
-[Socket to PDU]                 # Receives PDUs (Protocol Data Units) over TCP/UDP socket
+[CRC Append]                  # Appends CRC-16 checksum to the payload for error detection
      ↓
-[PDU to Tagged Stream]          # Converts discrete PDUs into a continuous stream with length tags
+[Protocol Formatter]          # Constructs packet with preamble, sync word
      ↓
-[GFSK Mod]                      # Performs Gaussian Frequency Shift Keying modulation
+[PDU to Tagged Stream]        # Converts PDUs into a tagged byte stream (for both payload and header)
      ↓
-[Soapy LimeSDR Sink]            # Sends modulated baseband samples to the LimeSDR for RF transmission
+[Tagged Stream Mux]           # Merges header and payload tagged streams into a single stream
+     ↓
+[GFSK Mod]                    # Performs Gaussian Frequency Shift Keying modulation
+     ↓
+[Soapy LimeSDR Sink]          # Sends modulated baseband samples to the LimeSDR for RF transmission
 
 ```
 
@@ -106,11 +110,9 @@ We have implemented a **full offline TX/RX testing pipeline** in GNU Radio to va
      ↓
 [Throttle]                      # Limits sample rate for consistency
      ↓
-[Unpack K bits]                 # Splits bytes into individual bits for processing
-     ↓
 [Correlate Access Code - Tag Stream]  # Detects sync word/preamble and tags packet start
      ↓
-[Pack K bits]                   # Groups bits back into bytes after sync detection
+[Repack bits]                   # Groups bits back into bytes after sync detection
      ↓
 [Tagged Stream Align]           # Ensures byte alignment in the tagged stream
      ↓
