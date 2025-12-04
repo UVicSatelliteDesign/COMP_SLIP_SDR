@@ -114,7 +114,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2328, 396.0]
+    coordinate: [840, 208.0]
     rotation: 0
     state: enabled
 - name: host_ip
@@ -250,7 +250,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: /Users/liamshatzel/code/UVSD/COMP_SLIP_SDR/flowgraphs/tx_baseband.cfile
+    file: tx_baseband.cfile
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -262,7 +262,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [248, 504.0]
+    coordinate: [248, 496.0]
     rotation: 0
     state: enabled
 - name: blocks_message_debug_0_0
@@ -280,25 +280,6 @@ blocks:
     coordinate: [1128, 732.0]
     rotation: 0
     state: enabled
-- name: blocks_message_strobe_0
-  id: blocks_message_strobe
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    msg: 'pmt.cons(pmt.make_dict(), pmt.make_u8vector(4, ord(''x'')))
-
-      '
-    period: '1000'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [136, 680.0]
-    rotation: 0
-    state: disabled
 - name: blocks_repack_bits_bb_2
   id: blocks_repack_bits_bb
   parameters:
@@ -334,7 +315,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1184, 508.0]
+    coordinate: [1184, 516.0]
     rotation: 0
     state: enabled
 - name: blocks_throttle2_0
@@ -376,6 +357,30 @@ blocks:
     bus_structure: null
     coordinate: [752, 508.0]
     rotation: 0
+    state: enabled
+- name: digital_crc_check_0
+  id: digital_crc_check
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    discard_crc: 'False'
+    final_xor: '0xFFFFFFFF'
+    initial_value: '0xFFFFFFFF'
+    input_reflected: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_bits: '16'
+    poly: crc_poly
+    result_reflected: 'True'
+    skip_header_bytes: '0'
+    swap_endianness: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1104, 644.0]
+    rotation: 180
     state: enabled
 - name: digital_gfsk_demod_0
   id: digital_gfsk_demod
@@ -420,26 +425,6 @@ blocks:
     coordinate: [800, 624.0]
     rotation: 180
     state: enabled
-- name: network_socket_pdu_0_0
-  id: network_socket_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    host: host_ip
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    mtu: '10000'
-    port: tcp_port
-    tcp_no_delay: 'False'
-    type: TCP_SERVER
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [376, 664.0]
-    rotation: 0
-    state: disabled
 - name: pdu_pdu_to_tagged_stream_0
   id: pdu_pdu_to_tagged_stream
   parameters:
@@ -474,44 +459,19 @@ blocks:
     coordinate: [1416, 652.0]
     rotation: 180
     state: enabled
-- name: satellites_crc_check_0
-  id: satellites_crc_check
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    discard_crc: 'False'
-    final_xor: '0xFFFFFFFF'
-    initial_value: '0xFFFFFFFF'
-    input_reflected: 'True'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    num_bits: '16'
-    poly: crc_poly
-    result_reflected: 'True'
-    skip_header_bytes: '0'
-    swap_endianness: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1112, 636.0]
-    rotation: 180
-    state: enabled
 
 connections:
 - [blocks_file_source_0, '0', digital_gfsk_demod_0, '0']
-- [blocks_message_strobe_0, strobe, network_socket_pdu_0_0, pdus]
 - [blocks_repack_bits_bb_2, '0', blocks_tagged_stream_align_0, '0']
 - [blocks_tagged_stream_align_0, '0', pdu_tagged_stream_to_pdu_0, '0']
 - [blocks_throttle2_0, '0', digital_correlate_access_code_xx_ts_0, '0']
 - [digital_correlate_access_code_xx_ts_0, '0', blocks_repack_bits_bb_2, '0']
+- [digital_crc_check_0, fail, blocks_message_debug_0_0, log]
+- [digital_crc_check_0, ok, network_socket_pdu_0, pdus]
+- [digital_crc_check_0, ok, pdu_pdu_to_tagged_stream_0, pdus]
 - [digital_gfsk_demod_0, '0', blocks_throttle2_0, '0']
 - [pdu_pdu_to_tagged_stream_0, '0', Output, '0']
-- [pdu_tagged_stream_to_pdu_0, pdus, satellites_crc_check_0, in]
-- [satellites_crc_check_0, fail, blocks_message_debug_0_0, log]
-- [satellites_crc_check_0, ok, network_socket_pdu_0, pdus]
-- [satellites_crc_check_0, ok, pdu_pdu_to_tagged_stream_0, pdus]
+- [pdu_tagged_stream_to_pdu_0, pdus, digital_crc_check_0, in]
 
 metadata:
   file_format: 1

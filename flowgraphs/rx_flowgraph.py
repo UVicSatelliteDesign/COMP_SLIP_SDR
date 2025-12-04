@@ -25,7 +25,6 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import gr, pdu
 from gnuradio import network
-import satellites
 import threading
 
 
@@ -87,7 +86,6 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
 
-        self.satellites_crc_check_0 = satellites.crc_check(16, crc_poly, 0xFFFFFFFF, 0xFFFFFFFF, True, True, False, False, 0)
         self.pdu_tagged_stream_to_pdu_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, 'packet_len')
         self.pdu_pdu_to_tagged_stream_0 = pdu.pdu_to_tagged_stream(gr.types.byte_t, 'packet_len')
         self.network_socket_pdu_0 = network.socket_pdu('TCP_SERVER', '127.0.0.1', '52001', 1500, False)
@@ -100,13 +98,14 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
             freq_error=0.0,
             verbose=False,
             log=True)
+        self.digital_crc_check_0 = digital.crc_check(16, crc_poly, 0xFFFFFFFF, 0xFFFFFFFF, True, True, False, False, 0)
         self.digital_correlate_access_code_xx_ts_0 = digital.correlate_access_code_bb_ts(access_key,
           threshold, 'packet_len')
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_char*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
         self.blocks_tagged_stream_align_0 = blocks.tagged_stream_align(gr.sizeof_char*1, 'packet_len')
         self.blocks_repack_bits_bb_2 = blocks.repack_bits_bb(1, 8, "packet_len", False, gr.GR_MSB_FIRST)
         self.blocks_message_debug_0_0 = blocks.message_debug(True, gr.log_levels.err)
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/Users/liamshatzel/code/UVSD/COMP_SLIP_SDR/flowgraphs/tx_baseband.cfile', False, 0, 0)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, 'tx_baseband.cfile', False, 0, 0)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
         self.Output = blocks.file_sink(gr.sizeof_char*1, 'rx_output.txt', False)
         self.Output.set_unbuffered(True)
@@ -115,10 +114,10 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.pdu_tagged_stream_to_pdu_0, 'pdus'), (self.satellites_crc_check_0, 'in'))
-        self.msg_connect((self.satellites_crc_check_0, 'fail'), (self.blocks_message_debug_0_0, 'log'))
-        self.msg_connect((self.satellites_crc_check_0, 'ok'), (self.network_socket_pdu_0, 'pdus'))
-        self.msg_connect((self.satellites_crc_check_0, 'ok'), (self.pdu_pdu_to_tagged_stream_0, 'pdus'))
+        self.msg_connect((self.digital_crc_check_0, 'fail'), (self.blocks_message_debug_0_0, 'log'))
+        self.msg_connect((self.digital_crc_check_0, 'ok'), (self.network_socket_pdu_0, 'pdus'))
+        self.msg_connect((self.digital_crc_check_0, 'ok'), (self.pdu_pdu_to_tagged_stream_0, 'pdus'))
+        self.msg_connect((self.pdu_tagged_stream_to_pdu_0, 'pdus'), (self.digital_crc_check_0, 'in'))
         self.connect((self.blocks_file_source_0, 0), (self.digital_gfsk_demod_0, 0))
         self.connect((self.blocks_repack_bits_bb_2, 0), (self.blocks_tagged_stream_align_0, 0))
         self.connect((self.blocks_tagged_stream_align_0, 0), (self.pdu_tagged_stream_to_pdu_0, 0))
