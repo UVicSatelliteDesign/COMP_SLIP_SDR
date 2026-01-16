@@ -91,14 +91,16 @@ class tx_flowgraph(gr.top_block, Qt.QWidget):
         self.digital_crc_append_0 = digital.crc_append(16, crc_poly, 0xFFFFFFFF, 0xFFFFFFFF, True, True, False, 0)
         self.blocks_wavfile_sink_0 = blocks.wavfile_sink(
             'tx_baseband.wav',
-            1,
+            2,
             samp_rate,
             blocks.FORMAT_WAV,
             blocks.FORMAT_PCM_16,
             False
             )
         self.blocks_tagged_stream_mux_0 = blocks.tagged_stream_mux(gr.sizeof_char*1, 'packet_len', 0)
-        self.blocks_complex_to_real_0 = blocks.complex_to_real(1)
+        self.blocks_tag_debug_0 = blocks.tag_debug(gr.sizeof_char*1, '', "")
+        self.blocks_tag_debug_0.set_display(True)
+        self.blocks_complex_to_float_0 = blocks.complex_to_float(1)
 
 
         ##################################################
@@ -108,9 +110,11 @@ class tx_flowgraph(gr.top_block, Qt.QWidget):
         self.msg_connect((self.digital_protocol_formatter_async_0, 'header'), (self.pdu_pdu_to_tagged_stream_0, 'pdus'))
         self.msg_connect((self.digital_protocol_formatter_async_0, 'payload'), (self.pdu_pdu_to_tagged_stream_0_0, 'pdus'))
         self.msg_connect((self.network_socket_pdu_0_0, 'pdus'), (self.digital_crc_append_0, 'in'))
-        self.connect((self.blocks_complex_to_real_0, 0), (self.blocks_wavfile_sink_0, 0))
+        self.connect((self.blocks_complex_to_float_0, 1), (self.blocks_wavfile_sink_0, 1))
+        self.connect((self.blocks_complex_to_float_0, 0), (self.blocks_wavfile_sink_0, 0))
+        self.connect((self.blocks_tagged_stream_mux_0, 0), (self.blocks_tag_debug_0, 0))
         self.connect((self.blocks_tagged_stream_mux_0, 0), (self.digital_gfsk_mod_0, 0))
-        self.connect((self.digital_gfsk_mod_0, 0), (self.blocks_complex_to_real_0, 0))
+        self.connect((self.digital_gfsk_mod_0, 0), (self.blocks_complex_to_float_0, 0))
         self.connect((self.digital_gfsk_mod_0, 0), (self.outputFromTX, 0))
         self.connect((self.pdu_pdu_to_tagged_stream_0, 0), (self.blocks_tagged_stream_mux_0, 0))
         self.connect((self.pdu_pdu_to_tagged_stream_0_0, 0), (self.blocks_tagged_stream_mux_0, 1))

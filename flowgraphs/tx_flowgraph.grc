@@ -117,8 +117,8 @@ blocks:
     coordinate: [488, 24.0]
     rotation: 0
     state: enabled
-- name: blocks_complex_to_real_0
-  id: blocks_complex_to_real
+- name: blocks_complex_to_float_0
+  id: blocks_complex_to_float
   parameters:
     affinity: ''
     alias: ''
@@ -130,7 +130,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1152, 124.0]
+    coordinate: [1168, 108.0]
     rotation: 0
     state: enabled
 - name: blocks_message_strobe_0
@@ -200,13 +200,13 @@ blocks:
     comment: ''
     file: tx_baseband.wav
     format: FORMAT_WAV
-    nchan: '1'
+    nchan: '2'
     samp_rate: samp_rate
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1296, 104.0]
+    coordinate: [1320, 104.0]
     rotation: 0
     state: enabled
 - name: digital_crc_append_0
@@ -304,7 +304,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 236.0]
+    coordinate: [1168, 220.0]
     rotation: 0
     state: enabled
 - name: pdu_pdu_to_tagged_stream_0
@@ -363,12 +363,13 @@ blocks:
     state: disabled
 
 connections:
-- [blocks_complex_to_real_0, '0', blocks_wavfile_sink_0, '0']
+- [blocks_complex_to_float_0, '0', blocks_wavfile_sink_0, '0']
+- [blocks_complex_to_float_0, '1', blocks_wavfile_sink_0, '1']
 - [blocks_message_strobe_0, strobe, digital_crc_append_0, in]
 - [blocks_message_strobe_0_0, strobe, digital_crc_append_0, in]
 - [blocks_tagged_stream_mux_0, '0', digital_gfsk_mod_0, '0']
 - [digital_crc_append_0, out, digital_protocol_formatter_async_0, in]
-- [digital_gfsk_mod_0, '0', blocks_complex_to_real_0, '0']
+- [digital_gfsk_mod_0, '0', blocks_complex_to_float_0, '0']
 - [digital_gfsk_mod_0, '0', outputFromTX, '0']
 - [digital_protocol_formatter_async_0, header, pdu_pdu_to_tagged_stream_0, pdus]
 - [digital_protocol_formatter_async_0, payload, pdu_pdu_to_tagged_stream_0_0, pdus]
