@@ -25,8 +25,6 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import gr, pdu
 from gnuradio import network
-from gnuradio import soapy
-import satellites
 import threading
 
 
@@ -67,16 +65,18 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.threshold = threshold = 450
+        self.variable_0 = variable_0 = 0
+        self.threshold = threshold = 0
         self.tcp_port = tcp_port = '52001'
         self.sync_word = sync_word = 1
-        self.samp_rate = samp_rate = 30.72e6
+        self.samp_rate = samp_rate = 32e3
         self.preamble = preamble = 0b10101010
         self.payload_len = payload_len = 128
         self.host_ip = host_ip = '127.0.0.1'
         self.frame_len = frame_len = 450
         self.crc_poly = crc_poly = 0x8005
         self.center_freq = center_freq = 915e6
+        self.access_key = access_key = '11100001010110101110100010010011'
         self.RF_gain = RF_gain = 30
         self.K = K = 8
         self.Bandwith = Bandwith = 30.72e6
@@ -85,64 +85,67 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
 
-        self.soapy_limesdr_source_0 = None
-        dev = 'driver=lime'
-        stream_args = ''
-        tune_args = ['']
-        settings = ['']
-
-        self.soapy_limesdr_source_0 = soapy.source(dev, "fc32", 1, 'driver=lime',
-                                  stream_args, tune_args, settings)
-        self.soapy_limesdr_source_0.set_sample_rate(0, samp_rate)
-        self.soapy_limesdr_source_0.set_bandwidth(0, Bandwith)
-        self.soapy_limesdr_source_0.set_frequency(0, center_freq)
-        self.soapy_limesdr_source_0.set_frequency_correction(0, 0)
-        self.soapy_limesdr_source_0.set_gain(0, min(max(RF_gain, -12.0), 61.0))
-        self.satellites_crc_check_0 = satellites.crc_check(16, crc_poly, 0xFFFFFFFF, 0xFFFFFFFF, True, True, False, False, 0)
-        self.pdu_tagged_stream_to_pdu_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, 'packet_len')
-        self.pdu_pdu_to_tagged_stream_0 = pdu.pdu_to_tagged_stream(gr.types.byte_t, 'packet_len')
-        self.network_socket_pdu_0_0 = network.socket_pdu('TCP_SERVER', host_ip, tcp_port, 10000, False)
-        self.network_socket_pdu_0 = network.socket_pdu('TCP_SERVER', '', '52001', 1500, False)
+        self.pdu_tagged_stream_to_pdu_0_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, 'packet_len')
+        self.pdu_pdu_to_tagged_stream_0_0 = pdu.pdu_to_tagged_stream(gr.types.byte_t, 'packet_len')
+        self.network_socket_pdu_0_0 = network.socket_pdu('TCP_SERVER', '127.0.0.1', '52001', 1500, False)
+        self.digital_gfsk_mod_0 = digital.gfsk_mod(
+            samples_per_symbol=2,
+            sensitivity=1.0,
+            bt=0.35,
+            verbose=False,
+            log=False,
+            do_unpack=True)
         self.digital_gfsk_demod_0 = digital.gfsk_demod(
-            samples_per_symbol=4,
+            samples_per_symbol=2,
             sensitivity=1,
             gain_mu=0.175,
             mu=0.5,
             omega_relative_limit=0.005,
             freq_error=0.0,
             verbose=False,
-            log=True)
-        self.digital_correlate_access_code_xx_ts_0 = digital.correlate_access_code_bb_ts('10101010',
+            log=False)
+        self.digital_crc_check_0_0 = digital.crc_check(16, crc_poly, 0xFFFFFFFF, 0xFFFFFFFF, True, True, False, True, 0)
+        self.digital_correlate_access_code_xx_ts_0 = digital.correlate_access_code_bb_ts(access_key,
           threshold, 'packet_len')
-        self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(K)
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_char*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
-        self.blocks_tagged_stream_align_0 = blocks.tagged_stream_align(gr.sizeof_char*1, 'packet_len')
-        self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(K)
-        self.blocks_message_strobe_0 = blocks.message_strobe(pmt.cons(pmt.make_dict(), pmt.make_u8vector(4, ord('x')))
-        , 1000)
+        self.blocks_tag_debug_0_0 = blocks.tag_debug(gr.sizeof_char*1, 'AtRepack', "")
+        self.blocks_tag_debug_0_0.set_display(True)
+        self.blocks_tag_debug_0 = blocks.tag_debug(gr.sizeof_char*1, 'AtInput', "")
+        self.blocks_tag_debug_0.set_display(True)
+        self.blocks_repack_bits_bb_2 = blocks.repack_bits_bb(1, 8, 'packet_len', True, gr.GR_MSB_FIRST)
+        self.blocks_message_debug_0_1 = blocks.message_debug(True, gr.log_levels.info)
         self.blocks_message_debug_0_0 = blocks.message_debug(True, gr.log_levels.err)
         self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
-        self.Output = blocks.file_sink(gr.sizeof_char*1, 'C:\\Users\\degan\\OneDrive\\Documents\\Work\\Projects\\UVSD\\Information\\raspiENV\\scripts\\output.txt', False)
-        self.Output.set_unbuffered(True)
+        self.blocks_file_source_1_0 = blocks.file_source(gr.sizeof_char*1, 'tx_data.txt', False, 0, 0)
+        self.blocks_file_source_1_0.set_begin_tag(pmt.PMT_NIL)
+        self.Output_0_0_1 = blocks.file_sink(gr.sizeof_char*1, 'rx_dbg1.txt', False)
+        self.Output_0_0_1.set_unbuffered(True)
+        self.Output_0_0 = blocks.file_sink(gr.sizeof_char*1, 'rx_dbg2.txt', False)
+        self.Output_0_0.set_unbuffered(True)
+        self.Output_0 = blocks.file_sink(gr.sizeof_char*1, 'rx_output.txt', False)
+        self.Output_0.set_unbuffered(True)
 
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.blocks_message_strobe_0, 'strobe'), (self.network_socket_pdu_0_0, 'pdus'))
-        self.msg_connect((self.network_socket_pdu_0, 'pdus'), (self.blocks_message_debug_0, 'print_pdu'))
-        self.msg_connect((self.network_socket_pdu_0, 'pdus'), (self.pdu_pdu_to_tagged_stream_0, 'pdus'))
-        self.msg_connect((self.pdu_tagged_stream_to_pdu_0, 'pdus'), (self.satellites_crc_check_0, 'in'))
-        self.msg_connect((self.satellites_crc_check_0, 'fail'), (self.blocks_message_debug_0_0, 'log'))
-        self.msg_connect((self.satellites_crc_check_0, 'ok'), (self.network_socket_pdu_0, 'pdus'))
-        self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.blocks_tagged_stream_align_0, 0))
-        self.connect((self.blocks_tagged_stream_align_0, 0), (self.pdu_tagged_stream_to_pdu_0, 0))
-        self.connect((self.blocks_throttle2_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
-        self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.digital_correlate_access_code_xx_ts_0, 0))
-        self.connect((self.digital_correlate_access_code_xx_ts_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
+        self.msg_connect((self.digital_crc_check_0_0, 'ok'), (self.blocks_message_debug_0, 'print'))
+        self.msg_connect((self.digital_crc_check_0_0, 'fail'), (self.blocks_message_debug_0_0, 'print'))
+        self.msg_connect((self.digital_crc_check_0_0, 'ok'), (self.network_socket_pdu_0_0, 'pdus'))
+        self.msg_connect((self.digital_crc_check_0_0, 'ok'), (self.pdu_pdu_to_tagged_stream_0_0, 'pdus'))
+        self.msg_connect((self.pdu_tagged_stream_to_pdu_0_0, 'pdus'), (self.blocks_message_debug_0_1, 'print'))
+        self.msg_connect((self.pdu_tagged_stream_to_pdu_0_0, 'pdus'), (self.digital_crc_check_0_0, 'in'))
+        self.connect((self.blocks_file_source_1_0, 0), (self.digital_gfsk_mod_0, 0))
+        self.connect((self.blocks_repack_bits_bb_2, 0), (self.Output_0_0, 0))
+        self.connect((self.blocks_repack_bits_bb_2, 0), (self.blocks_tag_debug_0_0, 0))
+        self.connect((self.blocks_repack_bits_bb_2, 0), (self.pdu_tagged_stream_to_pdu_0_0, 0))
+        self.connect((self.blocks_throttle2_0, 0), (self.Output_0_0_1, 0))
+        self.connect((self.blocks_throttle2_0, 0), (self.digital_correlate_access_code_xx_ts_0, 0))
+        self.connect((self.digital_correlate_access_code_xx_ts_0, 0), (self.blocks_repack_bits_bb_2, 0))
+        self.connect((self.digital_correlate_access_code_xx_ts_0, 0), (self.blocks_tag_debug_0, 0))
         self.connect((self.digital_gfsk_demod_0, 0), (self.blocks_throttle2_0, 0))
-        self.connect((self.pdu_pdu_to_tagged_stream_0, 0), (self.Output, 0))
-        self.connect((self.soapy_limesdr_source_0, 0), (self.digital_gfsk_demod_0, 0))
+        self.connect((self.digital_gfsk_mod_0, 0), (self.digital_gfsk_demod_0, 0))
+        self.connect((self.pdu_pdu_to_tagged_stream_0_0, 0), (self.Output_0, 0))
 
 
     def closeEvent(self, event):
@@ -152,6 +155,12 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
         self.wait()
 
         event.accept()
+
+    def get_variable_0(self):
+        return self.variable_0
+
+    def set_variable_0(self, variable_0):
+        self.variable_0 = variable_0
 
     def get_threshold(self):
         return self.threshold
@@ -177,7 +186,6 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.blocks_throttle2_0.set_sample_rate(self.samp_rate)
-        self.soapy_limesdr_source_0.set_sample_rate(0, self.samp_rate)
 
     def get_preamble(self):
         return self.preamble
@@ -214,14 +222,18 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
 
     def set_center_freq(self, center_freq):
         self.center_freq = center_freq
-        self.soapy_limesdr_source_0.set_frequency(0, self.center_freq)
+
+    def get_access_key(self):
+        return self.access_key
+
+    def set_access_key(self, access_key):
+        self.access_key = access_key
 
     def get_RF_gain(self):
         return self.RF_gain
 
     def set_RF_gain(self, RF_gain):
         self.RF_gain = RF_gain
-        self.soapy_limesdr_source_0.set_gain(0, min(max(self.RF_gain, -12.0), 61.0))
 
     def get_K(self):
         return self.K
@@ -234,7 +246,6 @@ class rx_flowgraph(gr.top_block, Qt.QWidget):
 
     def set_Bandwith(self, Bandwith):
         self.Bandwith = Bandwith
-        self.soapy_limesdr_source_0.set_bandwidth(0, self.Bandwith)
 
 
 

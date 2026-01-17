@@ -160,7 +160,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: C:\Users\degan\OneDrive\Documents\Work\Projects\UVSD\Information\raspiENV\scripts\output.txt
+    file: output.txt
     type: byte
     unbuffered: 'True'
     vlen: '1'
