@@ -19,7 +19,7 @@ options:
     realtime_scheduling: ''
     run: 'True'
     run_command: '{python} -u {filename}'
-    run_options: prompt
+    run_options: run
     sizing_mode: fixed
     thread_safe_setters: ''
     title: Not titled yet
@@ -129,18 +129,6 @@ blocks:
     coordinate: [408, 116.0]
     rotation: 0
     state: enabled
-- name: packet_len
-  id: variable
-  parameters:
-    comment: ''
-    value: '8'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [992, 120.0]
-    rotation: 0
-    state: enabled
 - name: payload_len
   id: variable
   parameters:
@@ -169,7 +157,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 30.72e6
+    value: 32e3
   states:
     bus_sink: false
     bus_source: false
@@ -225,7 +213,7 @@ blocks:
     coordinate: [696, 208.0]
     rotation: 0
     state: enabled
-- name: Output
+- name: Output_0
   id: blocks_file_sink
   parameters:
     affinity: ''
@@ -240,7 +228,43 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [960, 772.0]
+    coordinate: [1112, 756.0]
+    rotation: 0
+    state: enabled
+- name: Output_0_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: rx_dbg2.txt
+    type: byte
+    unbuffered: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1184, 588.0]
+    rotation: 0
+    state: enabled
+- name: Output_0_0_1
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: rx_dbg1.txt
+    type: byte
+    unbuffered: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [784, 612.0]
     rotation: 0
     state: enabled
 - name: blocks_file_source_0
@@ -262,7 +286,66 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [248, 496.0]
+    coordinate: [264, 496.0]
+    rotation: 0
+    state: disabled
+- name: blocks_file_source_1
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: tx_data.txt
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'False'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [304, 616.0]
+    rotation: 0
+    state: enabled
+- name: blocks_file_source_1_0
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: tx_data.txt
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'False'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [112, 352.0]
+    rotation: 0
+    state: disabled
+- name: blocks_message_debug_0
+  id: blocks_message_debug
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    en_uvec: 'True'
+    log_level: info
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1112, 836.0]
     rotation: 0
     state: enabled
 - name: blocks_message_debug_0_0
@@ -277,7 +360,22 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1128, 732.0]
+    coordinate: [928, 836.0]
+    rotation: 0
+    state: enabled
+- name: blocks_message_debug_0_1
+  id: blocks_message_debug
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    en_uvec: 'True'
+    log_level: info
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [728, 828.0]
     rotation: 0
     state: enabled
 - name: blocks_repack_bits_bb_2
@@ -285,37 +383,77 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    align_output: 'False'
+    align_output: 'True'
     comment: ''
     endianness: gr.GR_MSB_FIRST
     k: '1'
     l: '8'
-    len_tag_key: '"packet_len"'
+    len_tag_key: packet_len
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [976, 512.0]
+    coordinate: [1008, 512.0]
     rotation: 0
     state: enabled
-- name: blocks_tagged_stream_align_0
-  id: blocks_tagged_stream_align
+- name: blocks_repack_bits_bb_2_0
+  id: blocks_repack_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    align_output: 'True'
+    comment: ''
+    endianness: gr.GR_MSB_FIRST
+    k: '8'
+    l: '1'
+    len_tag_key: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [432, 632.0]
+    rotation: 0
+    state: enabled
+- name: blocks_tag_debug_0
+  id: blocks_tag_debug
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    lengthtagname: packet_len
-    maxoutbuf: '0'
-    minoutbuf: '0'
+    display: 'True'
+    filter: '""'
+    name: AtInput
+    num_inputs: '1'
     type: byte
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1184, 516.0]
+    coordinate: [1024, 420.0]
+    rotation: 0
+    state: enabled
+- name: blocks_tag_debug_0_0
+  id: blocks_tag_debug
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: values should be 1/8 that of AtInput
+    display: 'True'
+    filter: '""'
+    name: AtRepack
+    num_inputs: '1'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1184, 420.0]
     rotation: 0
     state: enabled
 - name: blocks_throttle2_0
@@ -323,7 +461,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "===   WARNING   ===\nThis flowgraph works EXCEPT for the GFSK Mod/Demod\
+      \ blocks:\nunpacking tx_data.txt is entirely valid but feeding it through \n\
+      mod/demod truncates exactly the last byte of the stream."
     ignoretag: 'True'
     limit: auto
     maximum: '0.1'
@@ -355,16 +495,16 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [752, 508.0]
+    coordinate: [784, 508.0]
     rotation: 0
     state: enabled
-- name: digital_crc_check_0
+- name: digital_crc_check_0_0
   id: digital_crc_check
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    discard_crc: 'False'
+    discard_crc: 'True'
     final_xor: '0xFFFFFFFF'
     initial_value: '0xFFFFFFFF'
     input_reflected: 'True'
@@ -379,8 +519,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 644.0]
-    rotation: 180
+    coordinate: [728, 732.0]
+    rotation: 0
     state: enabled
 - name: digital_gfsk_demod_0
   id: digital_gfsk_demod
@@ -390,7 +530,7 @@ blocks:
     comment: ''
     freq_error: '0.0'
     gain_mu: '0.175'
-    log: 'True'
+    log: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
     mu: '0.5'
@@ -402,10 +542,31 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 488.0]
+    coordinate: [424, 492.0]
     rotation: 0
-    state: enabled
-- name: network_socket_pdu_0
+    state: disabled
+- name: digital_gfsk_mod_0
+  id: digital_gfsk_mod
+  parameters:
+    affinity: ''
+    alias: ''
+    bt: '0.35'
+    comment: ''
+    do_unpack: 'True'
+    log: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_symbol: '2'
+    sensitivity: '1.0'
+    verbose: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [256, 364.0]
+    rotation: 0
+    state: disabled
+- name: network_socket_pdu_0_0
   id: network_socket_pdu
   parameters:
     affinity: ''
@@ -422,10 +583,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [800, 624.0]
-    rotation: 180
+    coordinate: [928, 672.0]
+    rotation: 0
     state: enabled
-- name: pdu_pdu_to_tagged_stream_0
+- name: pdu_pdu_to_tagged_stream_0_0
   id: pdu_pdu_to_tagged_stream
   parameters:
     affinity: ''
@@ -439,10 +600,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 780.0]
+    coordinate: [928, 764.0]
     rotation: 0
     state: enabled
-- name: pdu_tagged_stream_to_pdu_0
+- name: pdu_tagged_stream_to_pdu_0_0
   id: pdu_tagged_stream_to_pdu
   parameters:
     affinity: ''
@@ -456,22 +617,58 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1416, 652.0]
-    rotation: 180
+    coordinate: [504, 748.0]
+    rotation: 0
+    state: enabled
+- name: virtual_sink_0
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: Bytestream
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1232, 516.0]
+    rotation: 0
+    state: enabled
+- name: virtual_source_0
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: Bytestream
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [328, 748.0]
+    rotation: 0
     state: enabled
 
 connections:
 - [blocks_file_source_0, '0', digital_gfsk_demod_0, '0']
-- [blocks_repack_bits_bb_2, '0', blocks_tagged_stream_align_0, '0']
-- [blocks_tagged_stream_align_0, '0', pdu_tagged_stream_to_pdu_0, '0']
+- [blocks_file_source_1, '0', blocks_repack_bits_bb_2_0, '0']
+- [blocks_file_source_1_0, '0', digital_gfsk_mod_0, '0']
+- [blocks_repack_bits_bb_2, '0', Output_0_0, '0']
+- [blocks_repack_bits_bb_2, '0', blocks_tag_debug_0_0, '0']
+- [blocks_repack_bits_bb_2, '0', virtual_sink_0, '0']
+- [blocks_repack_bits_bb_2_0, '0', blocks_throttle2_0, '0']
+- [blocks_throttle2_0, '0', Output_0_0_1, '0']
 - [blocks_throttle2_0, '0', digital_correlate_access_code_xx_ts_0, '0']
 - [digital_correlate_access_code_xx_ts_0, '0', blocks_repack_bits_bb_2, '0']
-- [digital_crc_check_0, fail, blocks_message_debug_0_0, log]
-- [digital_crc_check_0, ok, network_socket_pdu_0, pdus]
-- [digital_crc_check_0, ok, pdu_pdu_to_tagged_stream_0, pdus]
+- [digital_correlate_access_code_xx_ts_0, '0', blocks_tag_debug_0, '0']
+- [digital_crc_check_0_0, fail, blocks_message_debug_0_0, print]
+- [digital_crc_check_0_0, ok, blocks_message_debug_0, print]
+- [digital_crc_check_0_0, ok, network_socket_pdu_0_0, pdus]
+- [digital_crc_check_0_0, ok, pdu_pdu_to_tagged_stream_0_0, pdus]
 - [digital_gfsk_demod_0, '0', blocks_throttle2_0, '0']
-- [pdu_pdu_to_tagged_stream_0, '0', Output, '0']
-- [pdu_tagged_stream_to_pdu_0, pdus, digital_crc_check_0, in]
+- [digital_gfsk_mod_0, '0', digital_gfsk_demod_0, '0']
+- [pdu_pdu_to_tagged_stream_0_0, '0', Output_0, '0']
+- [pdu_tagged_stream_to_pdu_0_0, pdus, blocks_message_debug_0_1, print]
+- [pdu_tagged_stream_to_pdu_0_0, pdus, digital_crc_check_0_0, in]
+- [virtual_source_0, '0', pdu_tagged_stream_to_pdu_0_0, '0']
 
 metadata:
   file_format: 1
