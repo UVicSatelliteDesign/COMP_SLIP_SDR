@@ -77,6 +77,8 @@ class tx_flowgraph(gr.top_block, Qt.QWidget):
 
         self.pdu_pdu_to_tagged_stream_0_0 = pdu.pdu_to_tagged_stream(gr.types.byte_t, 'packet_len')
         self.pdu_pdu_to_tagged_stream_0 = pdu.pdu_to_tagged_stream(gr.types.byte_t, 'packet_len')
+        self.outputFromTX_0 = blocks.file_sink(gr.sizeof_char*1, 'tx_data.txt', False)
+        self.outputFromTX_0.set_unbuffered(False)
         self.outputFromTX = blocks.file_sink(gr.sizeof_gr_complex*1, 'tx_baseband.cfile', False)
         self.outputFromTX.set_unbuffered(False)
         self.network_socket_pdu_0_0 = network.socket_pdu('TCP_SERVER', host_ip, tcp_port, 10000, False)
@@ -98,8 +100,6 @@ class tx_flowgraph(gr.top_block, Qt.QWidget):
             False
             )
         self.blocks_tagged_stream_mux_0 = blocks.tagged_stream_mux(gr.sizeof_char*1, 'packet_len', 0)
-        self.blocks_tag_debug_0 = blocks.tag_debug(gr.sizeof_char*1, '', "")
-        self.blocks_tag_debug_0.set_display(True)
         self.blocks_complex_to_float_0 = blocks.complex_to_float(1)
 
 
@@ -112,8 +112,8 @@ class tx_flowgraph(gr.top_block, Qt.QWidget):
         self.msg_connect((self.network_socket_pdu_0_0, 'pdus'), (self.digital_crc_append_0, 'in'))
         self.connect((self.blocks_complex_to_float_0, 1), (self.blocks_wavfile_sink_0, 1))
         self.connect((self.blocks_complex_to_float_0, 0), (self.blocks_wavfile_sink_0, 0))
-        self.connect((self.blocks_tagged_stream_mux_0, 0), (self.blocks_tag_debug_0, 0))
         self.connect((self.blocks_tagged_stream_mux_0, 0), (self.digital_gfsk_mod_0, 0))
+        self.connect((self.blocks_tagged_stream_mux_0, 0), (self.outputFromTX_0, 0))
         self.connect((self.digital_gfsk_mod_0, 0), (self.blocks_complex_to_float_0, 0))
         self.connect((self.digital_gfsk_mod_0, 0), (self.outputFromTX, 0))
         self.connect((self.pdu_pdu_to_tagged_stream_0, 0), (self.blocks_tagged_stream_mux_0, 0))
